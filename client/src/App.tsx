@@ -7,6 +7,7 @@ import { Login } from './pages/Login';
 import { Register } from './pages/Register';
 import { Dashboard } from './pages/Dashboard';
 import { Courses } from './pages/Courses';
+import Achievements from './pages/Achievements';
 
 function App() {
   return (
@@ -35,6 +36,15 @@ function App() {
             element={
               <ProtectedRoute>
                 <Courses />
+              </ProtectedRoute>
+            } 
+          />
+          
+          <Route 
+            path="/achievements" 
+            element={
+              <ProtectedRoute>
+                <Achievements />
               </ProtectedRoute>
             } 
           />
