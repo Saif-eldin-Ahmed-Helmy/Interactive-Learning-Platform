@@ -15,7 +15,8 @@ function App() {
         <Navbar />
         <Routes>
           {/* public routes */}
-          <Route path="/" element={<Landing />} />
+         
+          <Route path="/" element={<Landing/>} />
           <Route path="/login" element={<Login />} />
           <Route path="/register" element={<Register />} />
 
@@ -37,6 +38,8 @@ function App() {
               </ProtectedRoute>
             } 
           />
+
+        
 
           {/* TODO: add these routes when components are created
           <Route path="/courses/:id" element={<ProtectedRoute><CourseDetail /></ProtectedRoute>} />
