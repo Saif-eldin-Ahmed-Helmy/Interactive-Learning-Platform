@@ -1,0 +1,141 @@
+{
+  "courses": [
+    {
+      "id": "1",
+      "name": "HTML Fundamentals",
+      "description": "Master the structure of web pages and learn how to create semantic and accessible layouts using HTML5.",
+      "image": "/Images/html.jpg",
+      "level": "Beginner",
+      "duration": "4 hours",
+      "lessons": 10,
+      "category": "Frontend"
+    },
+    {
+      "id": "2",
+      "name": "CSS Mastery",
+      "description": "Learn how to style your web pages beautifully with CSS — including Flexbox, Grid, and animations.",
+      "image": "/Images/CSS.jpg",
+      "level": "Beginner",
+      "duration": "6 hours",
+      "lessons": 14,
+      "category": "Frontend"
+    },
+    {
+      "id": "3",
+      "name": "Responsive Web Design",
+      "description": "Build websites that look great on all devices using media queries and modern CSS techniques.",
+      "image": "/Images/web.jpg",
+      "level": "Intermediate",
+      "duration": "5 hours",
+      "lessons": 12,
+      "category": "Frontend"
+    },
+    {
+      "id": "4",
+      "name": "JavaScript Essentials",
+      "description": "Understand the core concepts of JavaScript including variables, functions, loops, and DOM manipulation.",
+      "image": "/Images/js.jpg",
+      "level": "Intermediate",
+      "duration": "8 hours",
+      "lessons": 20,
+      "category": "Frontend"
+    },
+    {
+      "id": "5",
+      "name": "Advanced JavaScript (ES6+)",
+      "description": "Deep dive into modern JavaScript features like arrow functions, promises, async/await, and modules.",
+      "image": "/Images/ES6.jpg",
+      "level": "Intermediate",
+      "duration": "7 hours",
+      "lessons": 18,
+      "category": "Frontend"
+    },
+    {
+      "id": "6",
+      "name": "React for Beginners",
+      "description": "Learn how to build interactive user interfaces and reusable components using React.js.",
+      "image": "/Images/react.jpg",
+      "level": "Intermediate",
+      "duration": "10 hours",
+      "lessons": 25,
+      "category": "Frontend"
+    },
+    {
+      "id": "7",
+      "name": "Git & GitHub for Developers",
+      "description": "Learn version control and how to collaborate effectively on projects using Git and GitHub.",
+      "image": "/Images/git.jpg",
+      "level": "Beginner",
+      "duration": "3 hours",
+      "lessons": 9,
+      "category": "Frontend"
+    },
+    {
+      "id": "8",
+      "name": "TypeScript for React Developers",
+      "description": "Enhance your React skills by learning TypeScript and how it improves code quality and scalability.",
+      "image": "/Images/ts.jpg",
+      "level": "Advanced",
+      "duration": "6 hours",
+      "lessons": 16,
+      "category": "Frontend"
+    },
+    {
+      "id": "9",
+      "name": "Frontend Project: Portfolio Website",
+      "description": "Apply everything you've learned by building a complete responsive personal portfolio website.",
+      "image": "/Images/project.jpg",
+      "level": "Intermediate",
+      "duration": "5 hours",
+      "lessons": 10,
+      "category": "Frontend"
+    },
+    {
+      "id": 1761913032469,
+      "name": "Node",
+      "description": "just a lesson",
+      "image": "https://images.unsplash.com/photo-1607799279861-4dd421887fb3?ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&q=80&w=1170",
+      "level": "Beginner",
+      "duration": "10 ",
+      "lessons": "25",
+      "category": "Frontend"
+    }
+  ],
+  "dashboard": [
+    {
+      "id": "1",
+      "name": "Introduction to Web Development",
+      "description": "Learn the basics of HTML, CSS, and JS to build your first website. Perfect for beginners!",
+      "progress": 75,
+      "image": "/Images/pic ai.jpg"
+    },
+    {
+      "id": "2",
+      "name": "Data Science Fundamentals",
+      "description": "Explore data science, algorithms, and visualization techniques to start your data journey.",
+      "progress": 25,
+      "image": "/Images/pic1.jpg"
+    },
+    {
+      "id": "3",
+      "name": "Graphic Design Principles",
+      "description": "Master composition, color, and typography to create stunning visuals for digital media.",
+      "progress": 90,
+      "image": "/Images/pic4.jpg"
+    },
+    {
+      "id": "4",
+      "name": "Mobile App Essentials",
+      "description": "Build cross-platform mobile apps using React Native. Learn UI, state, and API integration.",
+      "progress": 20,
+      "image": "/Images/pic2.jpg"
+    },
+    {
+      "id": "5",
+      "name": "Digital Marketing Strategies",
+      "description": "Understand SEO, social media, and content creation to grow and engage your audience.",
+      "progress": 60,
+      "image": "/Images/pic3.jpg"
+    }
+  ]
+}
