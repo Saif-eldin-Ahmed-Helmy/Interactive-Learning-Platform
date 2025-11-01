@@ -7,8 +7,8 @@ import { Login } from './pages/Login';
 import { Register } from './pages/Register';
 import { Dashboard } from './pages/Dashboard';
 import { Courses } from './pages/Courses';
+import { AddCourse } from './pages/AddCourse'
 import Achievements from './pages/Achievements';
-
 function App() {
   return (
     <Router>
@@ -17,10 +17,10 @@ function App() {
         <Routes>
           {/* public routes */}
          
-          <Route path="/" element={<Landing/>} />
+          <Route path="/" element={<Dashboard/>} />
           <Route path="/login" element={<Login />} />
           <Route path="/register" element={<Register />} />
-
+          <Route path="/courses/new" element={<AddCourse/>}/>
           {/* protected routes - all authenticated users */}
           <Route 
             path="/dashboard" 
