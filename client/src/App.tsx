@@ -9,6 +9,8 @@ import { Dashboard } from './pages/Dashboard';
 import { Courses } from './pages/Courses';
 import { AddCourse } from './pages/AddCourse'
 import Achievements from './pages/Achievements';
+import { QuizPage } from './pages/Quiz';
+
 function App() {
   return (
     <Router>
@@ -38,6 +40,12 @@ function App() {
                 <Courses />
               </ProtectedRoute>
             } 
+          />
+          <Route 
+            path="/quiz"
+            element={
+                <QuizPage />
+            }
           />
           
           <Route 
