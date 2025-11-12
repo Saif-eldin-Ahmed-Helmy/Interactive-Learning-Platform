@@ -11,6 +11,7 @@ export interface UserDocument {
   currentStreak: number;
   longestStreak: number;
   lastActiveDate: Date;
+  lastLoginDate: Date | null;
   treeLevel: number;
   enrolledCourses: string[];
   createdAt: Date;
@@ -105,6 +106,12 @@ export interface CodeSubmission {
   submittedAt: Date;
 }
 
+export interface VideoProgress {
+  lessonId: string;
+  currentTime: number;
+  lastUpdated: Date;
+}
+
 export interface ProgressDocument {
   _id: string;
   userId: string;
@@ -112,6 +119,7 @@ export interface ProgressDocument {
   completedLessons: CompletedLesson[];
   quizAttempts: QuizAttempt[];
   codeSubmissions: CodeSubmission[];
+  videoProgress: VideoProgress[];
   overallProgress: number;
   currentModuleIndex: number;
   enrolledAt: Date;
