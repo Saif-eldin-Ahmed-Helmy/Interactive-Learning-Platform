@@ -1,5 +1,6 @@
 import { Link } from 'react-router-dom';
 import { useAuth } from '../hooks/useAuth';
+import logo from '../assets/logo.png'
 
 export const Navbar = () => {
   const { user, logout } = useAuth();
@@ -16,6 +17,8 @@ export const Navbar = () => {
   return (
     <nav className="navbar navbar-expand-lg navbar-dark bg-primary">
       <div className="container">
+        <img src={logo} style={{width: "5vh"}}></img>
+
         <Link className="navbar-brand" to="/">
           Learning Platform
         </Link>

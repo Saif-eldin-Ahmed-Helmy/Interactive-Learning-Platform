@@ -7,9 +7,14 @@ import { Login } from './pages/Login';
 import { Register } from './pages/Register';
 import { Dashboard } from './pages/Dashboard';
 import { Courses } from './pages/Courses';
-import { AddCourse } from './pages/AddCourse'
+import { AddCourse } from './pages/admin/AddCourse';
+import { ManageUsers } from './pages/admin/ManageUsers';
+import { LessonPlayer } from './pages/LessonPlayer';
 import Achievements from './pages/Achievements';
 import { QuizPage } from './pages/Quiz';
+import { LessonQuiz } from './pages/LessonQuiz';
+import ProfilePage from './pages/Profile';
+import NotFound from './pages/NotFound';
 
 function App() {
   return (
@@ -49,6 +54,15 @@ function App() {
           />
           
           <Route 
+            path="/lesson-quiz/:lessonId"
+            element={
+              <ProtectedRoute>
+                <LessonQuiz />
+              </ProtectedRoute>
+            }
+          />
+          
+          <Route 
             path="/achievements" 
             element={
               <ProtectedRoute>
@@ -56,6 +70,38 @@ function App() {
               </ProtectedRoute>
             } 
           />
+          
+          <Route 
+            path="/profile" 
+            element={
+              <ProtectedRoute>
+                <ProfilePage />
+              </ProtectedRoute>
+            } 
+          />
+
+          {/* lesson player */}
+          <Route 
+            path="/learn/:courseId" 
+            element={
+              <ProtectedRoute>
+                <LessonPlayer />
+              </ProtectedRoute>
+            } 
+          />
+
+          {/* admin routes */}
+          <Route 
+            path="/admin/users" 
+            element={
+              <ProtectedRoute allowedRoles={['admin']}>
+                <ManageUsers />
+              </ProtectedRoute>
+            } 
+          />
+
+          {/* 404 catch-all route - must be last */}
+          <Route path="*" element={<NotFound />} />
 
         
 

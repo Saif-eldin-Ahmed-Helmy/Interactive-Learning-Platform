@@ -223,3 +223,202 @@ const checkModuleCompletion = async (userId: string, courseId: string, course: a
     console.error('check achievement error:', error);
   }
 };
+
+export const getNextLesson = async (req: Request, res: Response) => {
+  try {
+    const { courseId } = req.params;
+    const userId = req.session.userId;
+
+    if (!userId) {
+      return sendError(res, 401, 'unauthorized');
+    }
+
+    const progress = await Progress.findOne({ userId, courseId });
+    const course = await Course.findById(courseId).populate('modules.lessons');
+
+    if (!course) {
+      return sendError(res, 404, 'course not found');
+    }
+
+    // If no progress, start with first lesson
+    if (!progress || progress.completedLessons.length === 0) {
+      if (course.modules.length > 0 && course.modules[0].lessons.length > 0) {
+        const firstLessonId = course.modules[0].lessons[0];
+        return sendSuccess(res, { 
+          lessonId: firstLessonId,
+          moduleIndex: 0,
+          lessonIndex: 0,
+        });
+      }
+      return sendError(res, 404, 'no lessons found in course');
+    }
+
+    // Find first incomplete lesson
+    const completedLessonIds = progress.completedLessons.map(cl => cl.lessonId);
+    
+    for (let moduleIndex = 0; moduleIndex < course.modules.length; moduleIndex++) {
+      const module = course.modules[moduleIndex];
+      for (let lessonIndex = 0; lessonIndex < module.lessons.length; lessonIndex++) {
+        const lessonId = module.lessons[lessonIndex].toString();
+        if (!completedLessonIds.includes(lessonId)) {
+          return sendSuccess(res, {
+            lessonId,
+            moduleIndex,
+            lessonIndex,
+          });
+        }
+      }
+    }
+
+    // All lessons complete - return last lesson
+    const lastModule = course.modules[course.modules.length - 1];
+    const lastLessonId = lastModule.lessons[lastModule.lessons.length - 1];
+    return sendSuccess(res, {
+      lessonId: lastLessonId,
+      moduleIndex: course.modules.length - 1,
+      lessonIndex: lastModule.lessons.length - 1,
+      allComplete: true,
+    });
+  } catch (error) {
+    console.error('get next lesson error:', error);
+    return sendError(res, 500, 'failed to get next lesson');
+  }
+};
+
+export const updateLessonProgress = async (req: Request, res: Response) => {
+  try {
+    const { courseId, lessonId } = req.params;
+    const { timeSpent } = req.body;
+    const userId = req.session.userId;
+
+    if (!userId) {
+      return sendError(res, 401, 'unauthorized');
+    }
+
+    let progress = await Progress.findOne({ userId, courseId });
+
+    if (!progress) {
+      return sendError(res, 404, 'not enrolled in this course');
+    }
+
+    // Check if already completed
+    const alreadyCompleted = progress.completedLessons.some(
+      cl => cl.lessonId === lessonId
+    );
+
+    if (!alreadyCompleted) {
+      progress.completedLessons.push({
+        lessonId,
+        completedAt: new Date(),
+        timeSpent: timeSpent || 0,
+      });
+
+      // Calculate overall progress
+      const course = await Course.findById(courseId);
+      let totalLessons = 0;
+      course?.modules.forEach(m => totalLessons += m.lessons.length);
+      progress.overallProgress = Math.round((progress.completedLessons.length / totalLessons) * 100);
+
+      progress.lastAccessedAt = new Date();
+      await progress.save();
+
+      // Update user study hours
+      const minutes = timeSpent || 0;
+      await User.findByIdAndUpdate(userId, {
+        $inc: { studyHours: minutes / 60, points: 10 },
+      });
+
+      // Check for achievements
+      await checkModuleCompletion(userId, courseId, course!);
+    }
+
+    return sendSuccess(res, progress, 'lesson progress updated');
+  } catch (error) {
+    console.error('update lesson progress error:', error);
+    return sendError(res, 500, 'failed to update lesson progress');
+  }
+};
+
+// Save video progress (timestamp)
+export const saveVideoProgress = async (req: Request, res: Response) => {
+  try {
+    const { lessonId } = req.params;
+    const { currentTime } = req.body;
+    const userId = req.session.userId;
+
+    if (!userId) {
+      return sendError(res, 401, 'unauthorized');
+    }
+
+    if (currentTime === undefined || currentTime < 0) {
+      return sendError(res, 400, 'invalid current time');
+    }
+
+    // Find progress record for this user's course containing this lesson
+    const progress = await Progress.findOne({ userId });
+
+    if (!progress) {
+      return sendError(res, 404, 'progress record not found');
+    }
+
+    // Check if video progress for this lesson already exists
+    const existingIndex = progress.videoProgress.findIndex(
+      vp => vp.lessonId === lessonId
+    );
+
+    if (existingIndex !== -1) {
+      // Update existing
+      progress.videoProgress[existingIndex].currentTime = currentTime;
+      progress.videoProgress[existingIndex].lastUpdated = new Date();
+    } else {
+      // Add new
+      progress.videoProgress.push({
+        lessonId,
+        currentTime,
+        lastUpdated: new Date(),
+      });
+    }
+
+    progress.lastAccessedAt = new Date();
+    await progress.save();
+
+    return sendSuccess(res, { currentTime, lessonId }, 'video progress saved');
+  } catch (error) {
+    console.error('save video progress error:', error);
+    return sendError(res, 500, 'failed to save video progress');
+  }
+};
+
+// Get video progress for a specific lesson
+export const getVideoProgress = async (req: Request, res: Response) => {
+  try {
+    const { lessonId } = req.params;
+    const userId = req.session.userId;
+
+    if (!userId) {
+      return sendError(res, 401, 'unauthorized');
+    }
+
+    const progress = await Progress.findOne({ userId });
+
+    if (!progress) {
+      return sendSuccess(res, { currentTime: 0 });
+    }
+
+    const videoProgress = progress.videoProgress.find(
+      vp => vp.lessonId === lessonId
+    );
+
+    if (!videoProgress) {
+      return sendSuccess(res, { currentTime: 0 });
+    }
+
+    return sendSuccess(res, {
+      currentTime: videoProgress.currentTime,
+      lastUpdated: videoProgress.lastUpdated,
+    });
+  } catch (error) {
+    console.error('get video progress error:', error);
+    return sendError(res, 500, 'failed to get video progress');
+  }
+};
