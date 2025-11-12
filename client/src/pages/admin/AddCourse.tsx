@@ -3,7 +3,7 @@ import * as z from "zod";
 import axios from "axios";
 import { toast } from "react-toastify";
 import { useNavigate } from "react-router-dom";
-import "./Style.css";
+import "../Style.css";
 
 interface Course {
   id: number;

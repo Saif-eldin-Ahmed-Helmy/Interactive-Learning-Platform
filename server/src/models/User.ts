@@ -44,6 +44,10 @@ const userSchema = new Schema<UserDocument>(
       type: Date,
       default: Date.now,
     },
+    lastLoginDate: {
+      type: Date,
+      default: null,
+    },
     treeLevel: {
       type: Number,
       default: 1,
