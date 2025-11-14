@@ -11,6 +11,9 @@ import courseRoutes from './routes/courseRoutes';
 import progressRoutes from './routes/progressRoutes';
 import challengeRoutes from './routes/challengeRoutes';
 import adminRoutes from './routes/adminRoutes';
+import quizRoutes from './routes/quizRoutes';
+import userRoutes from './routes/userRoutes';
+import achievementRoutes from './routes/achievementRoutes';
 
 dotenv.config();
 
@@ -32,6 +35,9 @@ app.use('/api/courses', courseRoutes);
 app.use('/api/progress', progressRoutes);
 app.use('/api/challenges', challengeRoutes);
 app.use('/api/admin', adminRoutes);
+app.use('/api/quiz', quizRoutes);
+app.use('/api/users', userRoutes);
+app.use('/api/achievements', achievementRoutes);
 
 // health check
 app.get('/health', (req, res) => {
