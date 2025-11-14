@@ -1,5 +1,9 @@
 import { Link } from 'react-router-dom';
 import { useAuth } from '../hooks/useAuth';
+import NavbarRB from 'react-bootstrap/Navbar';
+import Nav from 'react-bootstrap/Nav';
+import Container from 'react-bootstrap/Container';
+import Button from 'react-bootstrap/Button';
 
 export const Navbar = () => {
   const { user, logout } = useAuth();
@@ -14,84 +18,41 @@ export const Navbar = () => {
   };
 
   return (
-    <nav className="navbar navbar-expand-lg navbar-dark bg-primary">
-      <div className="container">
-        <Link className="navbar-brand" to="/">
+    <NavbarRB bg="primary" variant="dark" expand="md" sticky="top" className="shadow-sm">
+      <Container>
+        <NavbarRB.Brand as={Link} to="/" className="fw-semibold">
           Learning Platform
-        </Link>
-        
-        <button
-          className="navbar-toggler"
-          type="button"
-          data-bs-toggle="collapse"
-          data-bs-target="#navbarNav"
-        >
-          <span className="navbar-toggler-icon"></span>
-        </button>
-
-        <div className="collapse navbar-collapse" id="navbarNav">
-          <ul className="navbar-nav ms-auto">
-            {!user ? (
+        </NavbarRB.Brand>
+        <NavbarRB.Toggle aria-controls="main-navbar" />
+        <NavbarRB.Collapse id="main-navbar">
+          <Nav className="ms-auto align-items-md-center">
+            {!user && (
               <>
-                <li className="nav-item">
-                  <Link className="nav-link" to="/login">
-                    Login
-                  </Link>
-                </li>
-                <li className="nav-item">
-                  <Link className="nav-link" to="/register">
-                    Register
-                  </Link>
-                </li>
-              </>
-            ) : (
-              <>
-                <li className="nav-item">
-                  <Link className="nav-link" to="/dashboard">
-                    Dashboard
-                  </Link>
-                </li>
-                <li className="nav-item">
-                  <Link className="nav-link" to="/courses">
-                    Courses
-                  </Link>
-                </li>
-                {user.role === 'student' && (
-                  <>
-                    <li className="nav-item">
-                      <Link className="nav-link" to="/profile">
-                        Profile
-                      </Link>
-                    </li>
-                    <li className="nav-item">
-                      <Link className="nav-link" to="/challenges">
-                        Challenges
-                      </Link>
-                    </li>
-                  </>
-                )}
-                {user.role === 'admin' && (
-                  <li className="nav-item">
-                    <Link className="nav-link" to="/admin">
-                      Admin
-                    </Link>
-                  </li>
-                )}
-                <li className="nav-item">
-                  <span className="nav-link text-light">
-                    {user.name} ({user.role})
-                  </span>
-                </li>
-                <li className="nav-item">
-                  <button className="btn btn-outline-light btn-sm" onClick={handleLogout}>
-                    Logout
-                  </button>
-                </li>
+                <Nav.Link as={Link} to="/login">Login</Nav.Link>
+                <Nav.Link as={Link} to="/register">Register</Nav.Link>
               </>
             )}
-          </ul>
-        </div>
-      </div>
-    </nav>
+            {user && (
+              <>
+                <Nav.Link as={Link} to="/">Home</Nav.Link>
+                <Nav.Link as={Link} to="/dashboard">Dashboard</Nav.Link>
+                <Nav.Link as={Link} to="/courses">Courses</Nav.Link>
+                <Nav.Link as={Link} to="/achievements">Achievements</Nav.Link>
+                <Nav.Link as={Link} to="/profile">Profile</Nav.Link>
+                <Button
+                  variant="danger"
+                  size="sm"
+                  onClick={handleLogout}
+                  style={{ borderRadius: 10 }}
+                  className="ms-md-3 mt-2 mt-md-0"
+                >
+                  Logout
+                </Button>
+              </>
+            )}
+          </Nav>
+        </NavbarRB.Collapse>
+      </Container>
+    </NavbarRB>
   );
 };

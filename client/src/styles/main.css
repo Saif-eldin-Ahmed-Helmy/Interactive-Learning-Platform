@@ -1,0 +1,173 @@
+:root {
+        --bs-primary-rgb: 10, 64, 97 !important;
+}
+
+html, body {
+    overflow-x: hidden; /* prevent horizontal scrollbar */
+}
+
+/* Hero Section */
+.hero-section {
+    background-color: #0b4b73;
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+        position: relative; /* allow overlay to mask star dots on the right */
+    background-image:
+        radial-gradient(1px 1px at 10px 20px, rgba(255,255,255,0.9), transparent),
+        radial-gradient(1px 1px at 30px 60px, rgba(255,255,255,0.8), transparent),
+        radial-gradient(1px 1px at 50px 40px, rgba(255,255,255,0.7), transparent),
+        radial-gradient(1px 1px at 70px 80px, rgba(255,255,255,0.8), transparent),
+        radial-gradient(1px 1px at 90px 10px, rgba(255,255,255,0.85), transparent);
+    background-size: 100px 100px;
+    background-repeat: repeat;
+}
+
+/* Keep content above the overlay */
+.hero-section > .container { position: relative; z-index: 1; }
+
+/* Fade/remove stars on the right side (desktop) for a cleaner image area */
+@media (min-width: 992px) {
+    .hero-section::after {
+        content: "";
+        position: absolute;
+        top: 0;
+        right: 0;
+        bottom: 0;
+        width: 48%;
+        background-color: #0b4b73;
+        pointer-events: none;
+        z-index: 0;
+    }
+}
+
+.hero-btn {
+    border-radius: 20px;
+}
+
+/* Shared Section Base */
+.feature-section, .courses-section {
+    background-color: #f8f9fa;
+    padding: 4rem 1rem;
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+    font-family: system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, "Noto Sans", "Liberation Sans", sans-serif;
+}
+
+.section-title {
+    text-align: center;
+    margin-bottom: 3rem;
+    font-weight: 700;
+    color: #343a40;
+    font-size: 2rem;
+}
+
+/* Feature Cards */
+.feature-card, .course-card {
+    border: 1px solid #dee2e6;
+    border-radius: 0.75rem;
+    text-align: center;
+    padding: 1rem;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+    height: 100%;
+    background-color: #ffffff;
+}
+
+.feature-icon {
+    font-size: 3rem;
+    color: #0d6efd;
+    margin-bottom: 1rem;
+}
+
+.feature-card-title, .course-card-title {
+    font-weight: bold;
+    color: #212529;
+    font-size: 1.2rem;
+    margin-bottom: 0.5rem;
+}
+
+.feature-card-text {
+    color: #6c757d;
+    font-size: 0.9rem;
+    line-height: 1.5;
+}
+
+.features-logo {
+    max-width: 180px;
+    height: auto;
+    margin: 0 auto;
+    display: block;
+}
+
+/* Courses */
+.icon-badge {
+    width: 64px;
+    height: 64px;
+    border-radius: 50%;
+    background-color: #ffffff;
+    border: 1px solid #dee2e6;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: 0 auto 12px auto;
+}
+
+.course-icon {
+    font-size: 1.75rem;
+    color: #0d6efd;
+}
+
+.emoji-badge {
+    font-size: 1.75rem; /* size of emoji inside icon-badge */
+    line-height: 1;
+}
+
+.course-meta {
+    color: #6c757d;
+    font-size: 0.9rem;
+}
+
+.course-title-wrap {
+    text-align: center;
+}
+
+.course-level {
+    display: inline-block;
+    margin-top: 4px;
+    white-space: nowrap;
+}
+
+.level-desc {
+    color: #6c757d;
+    font-size: 0.9rem;
+}
+
+/* Utilities */
+.mx-auto-narrow-list {
+    max-width: 320px;
+}
+
+/* Landing page specifics extracted from inline */
+.hero-illustration {
+    min-height: 240px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 80%; /* make the box 20% smaller than its container */
+    margin: 0 auto; /* center within the column */
+}
+
+.learn-preview-container {
+    max-width: 280px;
+}
+
+.learn-preview-box {
+    height: 240px;
+}
+
+.landing-footer {
+    background-color: #09324a;
+    color: #ffffff;
+}
