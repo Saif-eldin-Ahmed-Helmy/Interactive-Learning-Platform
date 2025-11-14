@@ -59,6 +59,35 @@ export const login = async (req: Request, res: Response) => {
       return sendError(res, 401, 'invalid email or password');
     }
 
+    // update daily streak
+    const now = new Date();
+    const lastLogin = user.lastLoginDate;
+    
+    if (lastLogin) {
+      const lastLoginDate = new Date(lastLogin);
+      const daysDiff = Math.floor((now.getTime() - lastLoginDate.getTime()) / (1000 * 60 * 60 * 24));
+      
+      if (daysDiff === 1) {
+        // consecutive day - increment streak
+        user.currentStreak += 1;
+        if (user.currentStreak > user.longestStreak) {
+          user.longestStreak = user.currentStreak;
+        }
+      } else if (daysDiff > 1) {
+        // streak broken - reset to 1
+        user.currentStreak = 1;
+      }
+      // if daysDiff === 0, same day login - don't change streak
+    } else {
+      // first login
+      user.currentStreak = 1;
+      user.longestStreak = 1;
+    }
+    
+    user.lastLoginDate = now;
+    user.lastActiveDate = now;
+    await user.save();
+
     // create session
     req.session.userId = user._id.toString();
     req.session.userRole = user.role;
@@ -72,7 +101,9 @@ export const login = async (req: Request, res: Response) => {
       points: user.points,
       studyHours: user.studyHours,
       currentStreak: user.currentStreak,
+      longestStreak: user.longestStreak,
       treeLevel: user.treeLevel,
+      enrolledCourses: user.enrolledCourses,
     };
 
     return sendSuccess(res, userData, 'logged in successfully');

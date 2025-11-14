@@ -157,3 +157,57 @@ export const enrollInCourse = async (req: Request, res: Response) => {
     return sendError(res, 500, 'failed to enroll in course');
   }
 };
+
+export const unenrollFromCourse = async (req: Request, res: Response) => {
+  try {
+    const { id } = req.params;
+    const userId = req.session.userId;
+
+    const course = await Course.findById(id);
+    
+    if (!course) {
+      return sendError(res, 404, 'course not found');
+    }
+
+    // check if enrolled
+    const existingProgress = await Progress.findOne({ userId, courseId: id });
+    if (!existingProgress) {
+      return sendError(res, 404, 'not enrolled in this course');
+    }
+
+    // delete progress record
+    await Progress.findOneAndDelete({ userId, courseId: id });
+
+    // remove from user's enrolled courses
+    await User.findByIdAndUpdate(userId, {
+      $pull: { enrolledCourses: id },
+    });
+
+    // decrement enrollment count
+    await Course.findByIdAndUpdate(id, {
+      $inc: { enrollmentCount: -1 },
+    });
+
+    return sendSuccess(res, null, 'unenrolled successfully');
+  } catch (error) {
+    console.error('unenroll error:', error);
+    return sendError(res, 500, 'failed to unenroll from course');
+  }
+};
+
+export const getEnrolledCourses = async (req: Request, res: Response) => {
+  try {
+    const userId = req.session.userId;
+
+    const user = await User.findById(userId).populate('enrolledCourses');
+    
+    if (!user) {
+      return sendError(res, 404, 'user not found');
+    }
+
+    return sendSuccess(res, user.enrolledCourses);
+  } catch (error) {
+    console.error('get enrolled courses error:', error);
+    return sendError(res, 500, 'failed to fetch enrolled courses');
+  }
+};

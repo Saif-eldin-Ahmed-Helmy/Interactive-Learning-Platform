@@ -1,5 +1,5 @@
 import mongoose, { Schema, Model } from 'mongoose';
-import { ProgressDocument, CompletedLesson, QuizAttempt, CodeSubmission } from '../types';
+import { ProgressDocument, CompletedLesson, QuizAttempt, CodeSubmission, VideoProgress } from '../types';
 
 const completedLessonSchema = new Schema<CompletedLesson>({
   lessonId: {
@@ -66,6 +66,22 @@ const codeSubmissionSchema = new Schema<CodeSubmission>({
   },
 }, { _id: false });
 
+const videoProgressSchema = new Schema<VideoProgress>({
+  lessonId: {
+    type: String,
+    ref: 'Lesson',
+    required: true,
+  },
+  currentTime: {
+    type: Number,
+    required: true,
+  },
+  lastUpdated: {
+    type: Date,
+    default: Date.now,
+  },
+}, { _id: false });
+
 const progressSchema = new Schema<ProgressDocument>(
   {
     userId: {
@@ -81,6 +97,7 @@ const progressSchema = new Schema<ProgressDocument>(
     completedLessons: [completedLessonSchema],
     quizAttempts: [quizAttemptSchema],
     codeSubmissions: [codeSubmissionSchema],
+    videoProgress: [videoProgressSchema],
     overallProgress: {
       type: Number,
       default: 0,
