@@ -1,0 +1,250 @@
+.lesson-player-container {
+  display: grid;
+  grid-template-columns: 350px 1fr;
+  height: calc(100vh - 60px);
+  overflow: hidden;
+  background: #f5f7fa;
+}
+
+/* Left Sidebar */
+.lesson-sidebar {
+  background: white;
+  border-right: 1px solid #e0e0e0;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+.sidebar-header {
+  padding: 20px;
+  border-bottom: 2px solid #e0e0e0;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.sidebar-header h5 {
+  margin: 0;
+  color: #1976d2;
+  font-size: 1.1rem;
+}
+
+.lesson-list {
+  flex: 1;
+  overflow-y: auto;
+  padding: 10px;
+}
+
+.module-section {
+  margin-bottom: 20px;
+}
+
+.module-header {
+  padding: 10px 15px;
+  background: #f0f4f8;
+  border-radius: 8px;
+  margin-bottom: 8px;
+}
+
+.module-header h6 {
+  margin: 0;
+  color: #1976d2;
+  font-size: 0.95rem;
+}
+
+.lessons-ul {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.lesson-item {
+  display: flex;
+  align-items: center;
+  padding: 12px 15px;
+  margin-bottom: 5px;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  background: #fafafa;
+  border-left: 3px solid transparent;
+}
+
+.lesson-item:hover {
+  background: #e3f2fd;
+  transform: translateX(5px);
+}
+
+.lesson-item.active {
+  background: #1976d2;
+  color: white;
+  border-left-color: #0d47a1;
+}
+
+.lesson-item.completed {
+  background: #e8f5e9;
+  border-left-color: #4caf50;
+}
+
+.lesson-item.completed.active {
+  background: #1976d2;
+  border-left-color: #0d47a1;
+}
+
+.lesson-number {
+  font-size: 0.85rem;
+  font-weight: 600;
+  min-width: 35px;
+  color: #666;
+}
+
+.lesson-item.active .lesson-number {
+  color: white;
+}
+
+.lesson-title {
+  flex: 1;
+  font-size: 0.9rem;
+  margin-left: 8px;
+}
+
+.check-mark {
+  color: #4caf50;
+  font-size: 1.2rem;
+  font-weight: bold;
+}
+
+.lesson-item.active .check-mark {
+  color: white;
+}
+
+/* Right Content Area */
+.lesson-content {
+  display: flex;
+  flex-direction: column;
+  overflow-y: auto;
+  padding: 30px;
+}
+
+.lesson-content:has(.code-editor-container) {
+  padding: 0;
+}
+
+.lesson-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 25px;
+  padding: 0 30px;
+}
+
+.lesson-header h4 {
+  color: #333;
+  margin-bottom: 5px;
+}
+
+.lesson-meta {
+  display: flex;
+  gap: 8px;
+}
+
+.video-container {
+  flex: 1;
+  margin-bottom: 20px;
+  max-width: 1200px;
+  width: 100%;
+  padding: 0 30px;
+}
+
+.code-editor-container {
+  flex: 1;
+  margin-bottom: 0;
+  width: 100%;
+  max-width: 100%;
+  padding: 0;
+  height: calc(100vh - 200px);
+}
+
+.lesson-actions {
+  display: flex;
+  gap: 15px;
+  padding: 20px 30px;
+  background: white;
+  border-radius: 12px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  margin: 0 30px 20px 30px;
+  position: sticky;
+  bottom: 20px;
+}
+
+.lesson-actions button {
+  padding: 12px 30px;
+  font-weight: 600;
+  border-radius: 8px;
+  transition: all 0.2s ease;
+}
+
+.lesson-actions button:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+}
+
+/* Scrollbar Styling */
+.lesson-list::-webkit-scrollbar,
+.lesson-content::-webkit-scrollbar {
+  width: 8px;
+}
+
+.lesson-list::-webkit-scrollbar-track,
+.lesson-content::-webkit-scrollbar-track {
+  background: #f1f1f1;
+  border-radius: 10px;
+}
+
+.lesson-list::-webkit-scrollbar-thumb,
+.lesson-content::-webkit-scrollbar-thumb {
+  background: #888;
+  border-radius: 10px;
+}
+
+.lesson-list::-webkit-scrollbar-thumb:hover,
+.lesson-content::-webkit-scrollbar-thumb:hover {
+  background: #555;
+}
+
+/* Responsive */
+@media (max-width: 968px) {
+  .lesson-player-container {
+    grid-template-columns: 280px 1fr;
+  }
+}
+
+@media (max-width: 768px) {
+  .lesson-player-container {
+    grid-template-columns: 1fr;
+    height: auto;
+  }
+
+  .lesson-sidebar {
+    max-height: 300px;
+  }
+
+  .lesson-content {
+    padding: 20px 15px;
+  }
+
+  .lesson-header {
+    flex-direction: column;
+    gap: 10px;
+  }
+
+  .lesson-actions {
+    flex-direction: column;
+    position: relative;
+    bottom: 0;
+  }
+
+  .lesson-actions button {
+    width: 100%;
+  }
+}

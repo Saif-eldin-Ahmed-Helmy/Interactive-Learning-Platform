@@ -4,6 +4,8 @@ import NavbarRB from 'react-bootstrap/Navbar';
 import Nav from 'react-bootstrap/Nav';
 import Container from 'react-bootstrap/Container';
 import Button from 'react-bootstrap/Button';
+import logo from '../assets/logo.png'
+
 
 export const Navbar = () => {
   const { user, logout } = useAuth();
@@ -21,6 +23,7 @@ export const Navbar = () => {
     <NavbarRB bg="primary" variant="dark" expand="md" sticky="top" className="shadow-sm">
       <Container>
         <NavbarRB.Brand as={Link} to="/" className="fw-semibold">
+          <img src={logo} alt="Learning Platform Logo" style={{ width: '5vh' }} />
           Learning Platform
         </NavbarRB.Brand>
         <NavbarRB.Toggle aria-controls="main-navbar" />

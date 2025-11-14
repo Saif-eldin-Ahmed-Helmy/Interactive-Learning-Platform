@@ -1,5 +1,5 @@
 :root {
-        --bs-primary-rgb: 10, 64, 97 !important;
+         --bs-primary-rgb: 10, 64, 97 !important;
 }
 
 html, body {
@@ -170,4 +170,5 @@ html, body {
 .landing-footer {
     background-color: #09324a;
     color: #ffffff;
+
 }
