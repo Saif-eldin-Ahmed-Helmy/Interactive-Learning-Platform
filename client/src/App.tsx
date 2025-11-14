@@ -10,6 +10,7 @@ import { Courses } from './pages/Courses';
 import { AddCourse } from './pages/AddCourse'
 import Achievements from './pages/Achievements';
 import { QuizPage } from './pages/Quiz';
+import LandingPage from './pages/LandingPage';
 
 function App() {
   return (
@@ -19,7 +20,7 @@ function App() {
         <Routes>
           {/* public routes */}
          
-          <Route path="/" element={<Dashboard/>} />
+          <Route path="/" element={<LandingPage/>} />
           <Route path="/login" element={<Login />} />
           <Route path="/register" element={<Register />} />
           <Route path="/courses/new" element={<AddCourse/>}/>
