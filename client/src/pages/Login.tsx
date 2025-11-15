@@ -2,16 +2,16 @@ import { useState, useEffect } from "react";
 import { useNavigate, Link } from "react-router-dom";
 import { Form, Button, Alert } from "react-bootstrap";
 import { useAuth } from "../hooks/useAuth";
-import { authService } from '../services/authService';
+import { authService } from "../services/authService";
+import { useParams } from "react-router-dom";
 import "../styles/signin.css";
 
 export const Login = () => {
-
+  const { action } = useParams<{ action?: string }>();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
-
 
   const [name, setName] = useState("");
   const [signUpEmail, setSignUpEmail] = useState("");
@@ -20,6 +20,10 @@ export const Login = () => {
 
   const { login, user } = useAuth();
   const navigate = useNavigate();
+
+  useEffect(() => {
+    setIsSignUp(action === "register");
+  }, [action]);
 
   useEffect(() => {
     if (user) {
@@ -43,14 +47,20 @@ export const Login = () => {
 
   const handleRegister = async (e: React.FormEvent) => {
     e.preventDefault();
-    setError('');
+    setError("");
     setLoading(true);
 
     try {
-      await authService.register({ name, email, password, role: 'student' });
-      navigate('/login');
+      await authService.register({
+        name,
+        email: signUpEmail,
+        password: signUpPassword,
+        role: "student",
+      });
+      // Switch to sign-in view on successful registration
+      setIsSignUp(false);
     } catch (err: any) {
-      setError(err.response?.data?.error || 'registration failed');
+      setError(err.response?.data?.error || "registration failed");
     } finally {
       setLoading(false);
     }
@@ -118,7 +128,9 @@ export const Login = () => {
               required
             />
           </Form.Group>
-          <Link to="/forgot-password" className="forgot-password">Forgot your password?</Link>
+          <Link to="/forgot-password" className="forgot-password">
+            Forgot your password?
+          </Link>
           <Button type="submit" disabled={loading}>
             {loading ? "Signing In..." : "Sign In"}
           </Button>
@@ -127,10 +139,23 @@ export const Login = () => {
       <div className="container-overlay">
         <div className="overlay">
           <div className="overlay-panel overlay-left">
-            <h1>Welcome Back!</h1>
-            <p>
-              To keep connected with us please login with your personal info
-            </p>
+                        <h2
+              className="overlay-text-mobile"
+              style={{
+                fontSize: "0.7rem",
+                color: "white",
+                margin: "20px",
+                textAlign: "center",
+              }}
+            >
+            Not your first time?
+            </h2>
+            <h1 className="overlay-text-pc">Hello, Friend!</h1>
+            <p className="overlay-text-pc">Enter your personal details and start your journey with us</p>
+            <h1 className="overlay-text-mobile">Welcome Back!</h1>
+            <p className="overlay-text-mobile">To keep connected with us please login with your personal info</p>
+
+
             <button
               className="ghost"
               id="signin"
@@ -140,8 +165,26 @@ export const Login = () => {
             </button>
           </div>
           <div className="overlay-panel overlay-right">
-            <h1>Hello, Friend!</h1>
-            <p>Enter your personal details and start your journey with us</p>
+            <h2
+              className="overlay-text-mobile"
+              style={{
+                fontSize: "0.7rem",
+                color: "white",
+                margin: "20px",
+                textAlign: "center",
+              }}
+            >
+            New here?
+            </h2>
+            <h1 className="overlay-text-pc">Welcome Back!</h1>
+            <p className="overlay-text-pc">
+              To keep connected with us please login with your personal info
+            </p>
+            <h1 className="overlay-text-mobile">Hello, Friend!</h1>
+            <p className="overlay-text-mobile">
+              Click sign in and enter your personal details and start your
+              journey with us
+            </p>
             <button
               className="ghost"
               id="signup"

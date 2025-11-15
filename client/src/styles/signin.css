@@ -1,8 +1,8 @@
 @import url("https://fonts.googleapis.com/css2?family=Poppins:wght@100;200;300;400;500;600;700;800;900&display=swap");
 :root {
   --back: #e5e7eb;
-  --ovrlay: #1a2c46;
-  --cont: #6487b9;
+  --ovrlay: rgb(10, 64, 97);
+  --cont: rgb(135, 169, 189);
 }
 
 * {
@@ -23,6 +23,10 @@
   overflow: hidden;
 }
 .container-signin {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
   position: absolute;
   top: 0;
   left: 0;
@@ -34,7 +38,6 @@
   font-size: 2rem;
   color: var(--back);
   margin: 60px;
-  margin-left: 100px;
   margin-bottom: 20px;
 }
 .container-signin form label {
@@ -58,7 +61,7 @@
 .container-signin button {
   font-size: 1rem;
   margin: 20px;
-  margin-left: 80px;
+  margin-left: 50px;
   padding: 10px;
   border-radius: 50px;
   border: 1px solid lightgray;
@@ -67,6 +70,9 @@
   width: 50%;
 }
 .container-signup {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
   position: absolute;
   top: 0;
   left: 50%;
@@ -81,7 +87,8 @@
   font-size: 2rem;
   color: var(--back);
   margin: 40px;
-  margin-left: 100px;
+  margin-top: 60px;
+  margin-top: 110px;
   margin-bottom: 5px;
 }
 .container-signup form label {
@@ -94,6 +101,7 @@
 .container-signup form {
   display: flex;
   flex-direction: column;
+  margin-left: -40px;
 }
 .container-signup input {
   margin: 20px;
@@ -102,12 +110,12 @@
   padding: 10px;
   border-radius: 50px;
   border: 1px solid lightgray;
-  width: 75%;
+  width: 90%;
 }
 .container-signup button {
   font-size: 1rem;
   margin: 20px;
-  margin-left: 80px;
+  margin-left: 55px;
   margin-top: 5px;
   margin-bottom: 5px;
   padding: 10px;
@@ -155,6 +163,7 @@
   color: var(--back);
   margin: 60px;
   margin-left: 100px;
+  margin-top: 120px;
   margin-bottom: 20px;
 }
 .overlay-left p {
@@ -234,10 +243,17 @@
 }
 
 .forgot-password {
-  margin-left: 50px;
+  font-size: 0.8rem;
+  margin-left: 45px;
+  opacity: 0.8;
   color: var(--back);
   text-decoration: none;
 }
+.overlay-text-mobile {
+  display: none;
+  transition: all 0.6s ease-in-out;
+}
+
 
 @keyframes fade {
   0% {
@@ -317,5 +333,20 @@
   .containerr.right-panel-active .overlay:hover {
     transform: translateY(5%);
   }
-
+  .container-signin{
+    margin: 10px;
+    margin-top: -40px;
+  }
+  .container-signup{
+    margin: 10px;
+  }
+  .overlay-text-pc{
+    display: none;
+  }
+  .overlay-text-mobile {
+    display: block;
+  }
+  .overlay:hover h2{
+    transform: translateY(-250%);
+  }
 }
