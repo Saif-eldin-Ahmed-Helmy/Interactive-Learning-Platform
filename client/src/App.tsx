@@ -10,12 +10,11 @@ import { ManageUsers } from "./pages/admin/ManageUsers";
 import { LessonPlayer } from "./pages/LessonPlayer";
 import Achievements from "./pages/Achievements";
 import { QuizPage } from "./pages/Quiz";
-
 import LandingPage from "./pages/LandingPage";
-
 import { LessonQuiz } from "./pages/LessonQuiz";
 import ProfilePage from "./pages/Profile";
 import NotFound from "./pages/NotFound";
+import Stats from "./pages/admin/dashboard_stats";
 
 function App() {
   return (
@@ -29,6 +28,8 @@ function App() {
           <Route path="/login" element={<Login />} />
           <Route path="/login/:action" element={<Login />} />
           <Route path="/courses/new" element={<AddCourse />} />
+          {/* fot testing */}
+          <Route path="/stats" element={<Stats />} />
           {/* protected routes - all authenticated users */}
           <Route
             path="/dashboard"
@@ -95,6 +96,14 @@ function App() {
               </ProtectedRoute>
             }
           />
+          <Route
+            path="/admin/dashboard"
+            element={
+              <ProtectedRoute allowedRoles={["admin"]}>
+                <Stats />
+              </ProtectedRoute>
+            }
+            />
 
           {/* 404 catch-all route - must be last */}
           <Route path="*" element={<NotFound />} />
