@@ -15,9 +15,22 @@ export const LessonPlayer: React.FC = () => {
   const [currentModuleIndex, setCurrentModuleIndex] = useState(0);
   const [currentLessonIndex, setCurrentLessonIndex] = useState(0);
   const [completedLessons, setCompletedLessons] = useState<string[]>([]);
+  const [pendingCompletedLessons, setPendingCompletedLessons] = useState<string[]>([]);
   const [loading, setLoading] = useState(true);
   const [showCodeEditor, setShowCodeEditor] = useState(false);
   const [quizPassed, setQuizPassed] = useState(false);
+  
+  const refreshCompletedLessons = async () => {
+    try {
+      const progressData = await progressService.getCourseProgress(courseId!);
+      if (progressData?.completedLessons) {
+        const completedIds = progressData.completedLessons.map((cl: any) => cl.lessonId);
+        setCompletedLessons(completedIds);
+      }
+    } catch (error) {
+      console.error("Failed to refresh completed lessons:", error);
+    }
+  };
 
   useEffect(() => {
     if (courseId) {
@@ -25,12 +38,29 @@ export const LessonPlayer: React.FC = () => {
     }
   }, [courseId]);
 
+  // If we land on a lesson that is already completed (e.g., after refresh), treat quiz as passed
+  useEffect(() => {
+    const lesson = getCurrentLesson();
+    if (lesson) {
+      const alreadyDone = isLessonCompleted(lesson._id);
+      if (alreadyDone && !quizPassed) {
+        setQuizPassed(true);
+      }
+      if (!alreadyDone && quizPassed) {
+        setQuizPassed(false);
+      }
+    }
+  }, [currentModuleIndex, currentLessonIndex, completedLessons]);
+
   // Check if returning from quiz with passed status
   useEffect(() => {
     if (location.state?.quizPassed && location.state?.lessonId) {
       const currentLesson = getCurrentLesson();
       if (currentLesson && currentLesson._id === location.state.lessonId) {
         setQuizPassed(true);
+        setPendingCompletedLessons((prev) =>
+          prev.includes(currentLesson._id) ? prev : [...prev, currentLesson._id]
+        );
         toast.success('🎉 Quiz Passed! Moving to next lesson...');
         
         // Mark lesson as complete and move to next
@@ -41,7 +71,12 @@ export const LessonPlayer: React.FC = () => {
               currentLesson._id,
               currentLesson.estimatedMinutes
             );
-            setCompletedLessons([...completedLessons, currentLesson._id]);
+            setCompletedLessons((prev) => {
+              if (prev.includes(currentLesson._id)) return prev;
+              return [...prev, currentLesson._id];
+            });
+            setPendingCompletedLessons((prev) => prev.filter((id) => id !== currentLesson._id));
+            await refreshCompletedLessons();
           } catch (error) {
             console.error("Failed to mark lesson complete:", error);
           }
@@ -64,7 +99,7 @@ export const LessonPlayer: React.FC = () => {
         }, 1500);
       }
     }
-  }, [location.state, currentModuleIndex, currentLessonIndex, course, courseId, completedLessons]);
+  }, [location.state, currentModuleIndex, currentLessonIndex, course, courseId]);
 
   const fetchCourseAndProgress = async () => {
     try {
@@ -121,6 +156,7 @@ export const LessonPlayer: React.FC = () => {
     setCurrentLessonIndex(lessonIndex);
     setShowCodeEditor(false);
     setQuizPassed(false); // Reset quiz status when changing lessons
+    refreshCompletedLessons();
   };
 
   const handleVideoComplete = () => {
@@ -168,13 +204,20 @@ export const LessonPlayer: React.FC = () => {
     if (currentLesson) {
       // Mark current lesson as complete
       try {
+        setPendingCompletedLessons((prev) =>
+          prev.includes(currentLesson._id) ? prev : [...prev, currentLesson._id]
+        );
         await progressService.updateLessonProgress(
           courseId!,
           currentLesson._id,
           currentLesson.estimatedMinutes
         );
-
-        setCompletedLessons([...completedLessons, currentLesson._id]);
+        setCompletedLessons((prev) => {
+          if (prev.includes(currentLesson._id)) return prev;
+          return [...prev, currentLesson._id];
+        });
+        await refreshCompletedLessons();
+        setPendingCompletedLessons((prev) => prev.filter((id) => id !== currentLesson._id));
         toast.success("Lesson completed! +10 points 🎉");
       } catch (error) {
         console.error("Failed to mark lesson complete:", error);
@@ -237,14 +280,14 @@ export const LessonPlayer: React.FC = () => {
   };
 
   const isLessonCompleted = (lessonId: string) => {
-    return completedLessons.includes(lessonId);
+    return completedLessons.includes(lessonId) || pendingCompletedLessons.includes(lessonId);
   };
 
   const arePreviousLessonsCompleted = (): boolean => {
     if (!course) return false;
     
     // Check all lessons before the current one
-    for (let modIdx = 0; modIdx < course.modules.length; modIdx++) {
+    for (let modIdx = 0; modIdx <= currentModuleIndex; modIdx++) {
       const module = course.modules[modIdx];
       const lessonLimit = modIdx === currentModuleIndex ? currentLessonIndex : module.lessons.length;
       
@@ -335,43 +378,45 @@ export const LessonPlayer: React.FC = () => {
       <div className="lesson-content">
         {currentLesson && (
           <>
-            <div className="lesson-header">
-              <div>
-                <h4 className="fw-bold">{currentLesson.title}</h4>
-                <p className="text-muted">{currentLesson.description}</p>
+            <div className="lesson-scrollable-area">
+              <div className="lesson-header">
+                <div>
+                  <h4 className="fw-bold">{currentLesson.title}</h4>
+                  <p className="text-muted">{currentLesson.description}</p>
+                </div>
+                <div className="lesson-meta">
+                  <span className="badge bg-info me-2">
+                    {currentLesson.estimatedMinutes} min
+                  </span>
+                  <span className="badge bg-success">
+                    {currentLesson.pointsReward} points
+                  </span>
+                </div>
               </div>
-              <div className="lesson-meta">
-                <span className="badge bg-info me-2">
-                  {currentLesson.estimatedMinutes} min
-                </span>
-                <span className="badge bg-success">
-                  {currentLesson.pointsReward} points
-                </span>
-              </div>
-            </div>
 
-            {!showCodeEditor ? (
-              <div className="video-container">
-                {currentLesson.videoUrl && (
-                  <YouTubePlayer
-                    key={`${currentModuleIndex}-${currentLessonIndex}`}
-                    videoUrl={currentLesson.videoUrl}
-                    lessonId={currentLesson._id}
-                    onVideoComplete={handleVideoComplete}
+              {!showCodeEditor ? (
+                <div className="video-container">
+                  {currentLesson.videoUrl && (
+                    <YouTubePlayer
+                      key={`${currentModuleIndex}-${currentLessonIndex}`}
+                      videoUrl={currentLesson.videoUrl}
+                      lessonId={currentLesson._id}
+                      onVideoComplete={handleVideoComplete}
+                    />
+                  )}
+                </div>
+              ) : (
+                <div className="code-editor-container">
+                  <CodeEditor
+                    exercise={currentLesson.codeExercise || getDefaultExercise()}
+                    onComplete={() => {
+                      setShowCodeEditor(false);
+                      toast.success("Exercise completed!");
+                    }}
                   />
-                )}
-              </div>
-            ) : (
-              <div className="code-editor-container">
-                <CodeEditor
-                  exercise={currentLesson.codeExercise || getDefaultExercise()}
-                  onComplete={() => {
-                    setShowCodeEditor(false);
-                    toast.success("Exercise completed!");
-                  }}
-                />
-              </div>
-            )}
+                </div>
+              )}
+            </div>
 
             <div className="lesson-actions">
               {!showCodeEditor && (
