@@ -1,4 +1,5 @@
 import { Container, Row, Col, Card } from 'react-bootstrap';
+import { useNavigate } from 'react-router-dom';
 import { BsGear, BsBook, BsShield } from 'react-icons/bs';
 import logo from '../assets/logo.png';
 import landingpage from '../assets/landingpage.png';
@@ -41,6 +42,13 @@ const COURSES: Course[] = [
 ];
 
 export default function LandingPage(): JSX.Element {
+  const navigate = useNavigate();
+
+  const goToCourses = (e?: React.MouseEvent) => {
+    if (e) e.preventDefault();
+    navigate('/courses');
+  };
+
   return (
     <main>
       {/* Hero */}
@@ -212,8 +220,12 @@ export default function LandingPage(): JSX.Element {
                           ))}
                         </ul>
                         <div className="mt-auto d-flex gap-2 justify-content-center">
-                          <a className="btn btn-outline-primary btn-sm" href="#" role="button">Preview</a>
-                          <a className="btn btn-primary btn-sm" href="#" role="button">Enroll</a>
+                          <button className="btn btn-outline-primary btn-sm" onClick={goToCourses}>
+                            Preview
+                          </button>
+                          <button className="btn btn-primary btn-sm" onClick={goToCourses}>
+                            Enroll
+                          </button>
                         </div>
                       </Card.Body>
                     </Card>
