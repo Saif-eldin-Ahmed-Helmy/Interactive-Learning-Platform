@@ -26,6 +26,16 @@ export const getMyProgress = async (req: Request, res: Response) => {
   }
 };
 
+const normalizeCompletedLessons = (completedLessons: any[] = []) => {
+  return completedLessons.map((cl) => {
+    const base = cl?.toObject ? cl.toObject() : cl;
+    return {
+      ...base,
+      lessonId: cl.lessonId?.toString() ?? cl.lessonId,
+    };
+  });
+};
+
 export const getCourseProgress = async (req: Request, res: Response) => {
   try {
     const { courseId } = req.params;
@@ -42,7 +52,12 @@ export const getCourseProgress = async (req: Request, res: Response) => {
       return sendError(res, 404, 'progress not found');
     }
 
-    return sendSuccess(res, progress);
+    const normalized = {
+      ...progress.toObject(),
+      completedLessons: normalizeCompletedLessons(progress.completedLessons),
+    };
+
+    return sendSuccess(res, normalized);
   } catch (error) {
     console.error('get course progress error:', error);
     return sendError(res, 500, 'failed to fetch course progress');
@@ -332,7 +347,12 @@ export const updateLessonProgress = async (req: Request, res: Response) => {
       await checkModuleCompletion(userId, courseId, course!);
     }
 
-    return sendSuccess(res, progress, 'lesson progress updated');
+    const normalized = {
+      ...progress.toObject(),
+      completedLessons: normalizeCompletedLessons(progress.completedLessons),
+    };
+
+    return sendSuccess(res, normalized, 'lesson progress updated');
   } catch (error) {
     console.error('update lesson progress error:', error);
     return sendError(res, 500, 'failed to update lesson progress');

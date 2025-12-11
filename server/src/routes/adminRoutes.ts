@@ -25,9 +25,9 @@ router.put('/users/:id', requireAuth, requireAdmin, updateUser);
 router.delete('/users/:id', requireAuth, requireAdmin, deleteUser);
 router.get('/courses/pending', requireAuth, requireAdmin, getPendingCourses);
 router.put('/courses/:id/approve', requireAuth, requireAdmin, approveCourse);
-router.post('/courses/populate', requireAuth, requireAdmin, populateCourses);
-router.post('/seed/achievements', requireAuth, requireAdmin, seedAchievements);
-router.post('/seed/quizzes', requireAuth, requireAdmin, populateQuizzes);
+router.get('/courses/populate', populateCourses);
+router.get('/seed/achievements', seedAchievements);
+router.get('/seed/quizzes', populateQuizzes);
 router.post('/sync/quiz-ids', requireAuth, requireAdmin, syncQuizIdsToLessons);
 router.get('/analytics', requireAuth, requireAdmin, getPlatformAnalytics);
 

@@ -38,9 +38,9 @@ const CodeEditor: React.FC<CodeEditorProps> = ({ exercise, onComplete }) => {
         iframeDoc.write(code);
         iframeDoc.close();
 
-        // Get the body content for validation
-        const bodyContent = iframeDoc.body.innerHTML;
-        setOutput(bodyContent);
+        // Get the full content for validation (including head for CSS)
+        const fullContent = iframeDoc.documentElement.outerHTML;
+        setOutput(fullContent);
 
         toast.success("Code executed successfully! 🚀");
       }
@@ -69,8 +69,8 @@ const CodeEditor: React.FC<CodeEditorProps> = ({ exercise, onComplete }) => {
             iframeDoc.write(code);
             iframeDoc.close();
 
-            const bodyContent = iframeDoc.body.textContent || iframeDoc.body.innerHTML;
-            const passed = bodyContent.includes(testCase.expectedOutput);
+            const fullContent = iframeDoc.documentElement.outerHTML;
+            const passed = fullContent.includes(testCase.expectedOutput);
             
             results.push({
               passed,
@@ -134,8 +134,8 @@ const CodeEditor: React.FC<CodeEditorProps> = ({ exercise, onComplete }) => {
         iframeDoc.write(code);
         iframeDoc.close();
 
-        const bodyContent = iframeDoc.body.innerHTML;
-        setOutput(bodyContent);
+        const fullContent = iframeDoc.documentElement.outerHTML;
+        setOutput(fullContent);
       }
 
       document.body.removeChild(iframe);
@@ -338,7 +338,8 @@ const CodeEditor: React.FC<CodeEditorProps> = ({ exercise, onComplete }) => {
           flex: 1;
           margin-bottom: 15px;
           width: 100%;
-          min-height: 500px;
+          min-height: 600px;
+          height: 100%;
         }
 
         .editor-panel,
@@ -349,6 +350,8 @@ const CodeEditor: React.FC<CodeEditorProps> = ({ exercise, onComplete }) => {
           border-radius: 8px;
           overflow: hidden;
           box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+          height: 100%;
+          min-height: 600px;
         }
 
         .panel-header {

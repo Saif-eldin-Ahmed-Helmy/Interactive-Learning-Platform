@@ -2,6 +2,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import { useParams, useNavigate, useLocation } from 'react-router-dom';
 import { Container, Button, Col } from 'react-bootstrap';
 import { quizService } from '../services/quizService';
+import { progressService } from '../services/progressService';
 import { toast } from 'react-toastify';
 import { Canva, CanvaRef, GameState } from '../components/Canva';
 
@@ -41,6 +42,17 @@ export const LessonQuiz: React.FC = () => {
   const gameStateRef = useRef<GameState | null>(null);
   const [submittingQuiz, setSubmittingQuiz] = useState(false);
   const [userAnswers, setUserAnswers] = useState<number[]>([]);
+
+  // Mark lesson complete as soon as the quiz is passed so progress is always saved
+  const markLessonComplete = async () => {
+    if (!courseId || !lessonId) return;
+
+    try {
+      await progressService.updateLessonProgress(courseId, lessonId, 0);
+    } catch (error) {
+      console.error('Failed to mark lesson complete after quiz:', error);
+    }
+  };
 
   useEffect(() => {
     if (lessonId) {
@@ -155,13 +167,14 @@ export const LessonQuiz: React.FC = () => {
       console.log('Backend Response:', result);
 
       if (passed) {
+        await markLessonComplete();
         toast.success(`🎉 Quiz Passed! Score: ${percentage}%`);
         
         setTimeout(() => {
           navigate(returnTo || `/learn/${courseId}`, {
             state: { quizPassed: true, lessonId }
           });
-        }, 2000);
+        }, 1200);
       } else {
         toast.error(`Quiz Failed. Score: ${percentage}%. Passing: ${quiz.passingScore}%`);
       }
@@ -254,8 +267,17 @@ export const LessonQuiz: React.FC = () => {
     setGameKey((k) => k + 1);
   };
 
-  const handleQuit = () => {
-    navigate(returnTo || `/learn/${courseId}`);
+  const handleQuit = async (forcePassed?: boolean) => {
+    const shouldMarkComplete = forcePassed ?? passed;
+
+    if (shouldMarkComplete) {
+      await markLessonComplete();
+      navigate(returnTo || `/learn/${courseId}`, {
+        state: { quizPassed: true, lessonId }
+      });
+    } else {
+      navigate(returnTo || `/learn/${courseId}`);
+    }
   };
 
   if (loading) {
@@ -363,7 +385,7 @@ export const LessonQuiz: React.FC = () => {
                   Try Again
                 </Button>
               )}
-              <Button variant="outline-light" onClick={handleQuit}>
+              <Button variant="outline-light" onClick={() => handleQuit(passed)}>
                 {passed ? 'Continue' : 'Quit'}
               </Button>
             </div>
