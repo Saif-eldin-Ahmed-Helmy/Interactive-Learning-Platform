@@ -63,8 +63,8 @@ export const acceptChallenge = async (req: Request, res: Response) => {
   try {
     const { id } = req.params;
 
-    const challenge = await Challenge.findByIdAndUpdate(
-      id,
+    const challenge = await Challenge.findOneAndUpdate(
+      { _id: id, opponentId: req.session.userId, status: 'pending' },
       { status: 'accepted' },
       { new: true }
     );
@@ -84,8 +84,8 @@ export const declineChallenge = async (req: Request, res: Response) => {
   try {
     const { id } = req.params;
 
-    const challenge = await Challenge.findByIdAndUpdate(
-      id,
+    const challenge = await Challenge.findOneAndUpdate(
+      { _id: id, opponentId: req.session.userId, status: 'pending' },
       { status: 'declined' },
       { new: true }
     );
@@ -107,21 +107,32 @@ export const submitChallengeResult = async (req: Request, res: Response) => {
     const { score } = req.body;
     const userId = req.session.userId;
 
-    const challenge = await Challenge.findById(id);
-
-    if (!challenge) {
-      return sendError(res, 404, 'challenge not found');
+    if (!Number.isInteger(score) || score < 0 || score > 100) {
+      return sendError(res, 400, 'score must be an integer from 0 to 100');
     }
 
-    // determine if challenger or opponent
+    const challenge = await Challenge.findOne({
+      _id: id,
+      status: 'accepted',
+      $or: [{ challengerId: userId }, { opponentId: userId }],
+    });
+
+    if (!challenge) {
+      return sendError(res, 404, 'active challenge not found');
+    }
+
     const isChallenger = challenge.challengerId.toString() === userId;
     const updateField = isChallenger ? 'challengerScore' : 'opponentScore';
 
-    const updated = await Challenge.findByIdAndUpdate(
-      id,
+    const updated = await Challenge.findOneAndUpdate(
+      { _id: id, status: 'accepted', [updateField]: { $exists: false } },
       { [updateField]: score },
       { new: true }
     );
+
+    if (!updated) {
+      return sendError(res, 409, 'result already submitted or challenge completed');
+    }
 
     // check if both completed
     if (updated!.challengerScore !== undefined && updated!.opponentScore !== undefined) {
@@ -130,11 +141,13 @@ export const submitChallengeResult = async (req: Request, res: Response) => {
           ? updated!.challengerId
           : updated!.opponentId;
 
-      await Challenge.findByIdAndUpdate(id, {
-        status: 'completed',
-        winnerId,
-        completedAt: new Date(),
-      });
+      const completed = await Challenge.findOneAndUpdate(
+        { _id: id, status: 'accepted' },
+        { status: 'completed', winnerId, completedAt: new Date() },
+        { new: true }
+      );
+
+      if (!completed) return sendSuccess(res, updated, 'result submitted');
 
       // notify both users
       await Notification.create({

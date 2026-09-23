@@ -14,10 +14,9 @@ interface Course {
 
 interface CardProps {
   course: Course;
-  children?: React.ReactNode;
 }
 
-const Card: React.FC<CardProps> = ({ course, children }) => {
+const Card: React.FC<CardProps> = ({ course }) => {
   const navigate = useNavigate();
 
   return (

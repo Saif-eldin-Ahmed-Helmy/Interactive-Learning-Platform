@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { Container, Row, Col, Card, Button, Form, Spinner, Alert } from "react-bootstrap";
-import { FaUserCog, FaTree, FaCalendarDay, FaClock, FaEdit, FaSave, FaTimes, FaTrophy } from "react-icons/fa";
+import { FaUserCog, FaCalendarDay, FaClock, FaEdit, FaSave, FaTimes, FaTrophy } from "react-icons/fa";
 import { useNavigate } from "react-router-dom";
 import { toast } from "react-toastify";
 import { userService } from "../services/userService";

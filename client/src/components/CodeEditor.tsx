@@ -17,35 +17,19 @@ const CodeEditor: React.FC<CodeEditorProps> = ({ exercise, onComplete }) => {
   const [code, setCode] = useState(exercise.starterCode);
   const [showHints, setShowHints] = useState(false);
   const [currentHintIndex, setCurrentHintIndex] = useState(0);
-  const [output, setOutput] = useState("");
   const [testResults, setTestResults] = useState<Array<{passed: boolean, message: string}>>([]);
   const [showTestResults, setShowTestResults] = useState(false);
   const [validationStatus, setValidationStatus] = useState<'idle' | 'success' | 'error'>('idle');
+
+  // DOMParser does not execute learner scripts. The visible preview runs in a sandboxed iframe.
+  const parsedContent = () => new DOMParser().parseFromString(code, 'text/html').documentElement.outerHTML;
 
   const handleRunCode = () => {
     try {
       setShowTestResults(false);
       setValidationStatus('idle');
       
-      // Create an iframe to run the HTML/CSS/JS code safely
-      const iframe = document.createElement("iframe");
-      iframe.style.display = "none";
-      document.body.appendChild(iframe);
-
-      const iframeDoc = iframe.contentDocument || iframe.contentWindow?.document;
-      if (iframeDoc) {
-        iframeDoc.open();
-        iframeDoc.write(code);
-        iframeDoc.close();
-
-        // Get the full content for validation (including head for CSS)
-        const fullContent = iframeDoc.documentElement.outerHTML;
-        setOutput(fullContent);
-
-        toast.success("Code executed successfully! 🚀");
-      }
-
-      document.body.removeChild(iframe);
+      toast.success("Preview updated");
     } catch (error) {
       toast.error("Error running code: " + (error as Error).message);
       setValidationStatus('error');
@@ -59,28 +43,13 @@ const CodeEditor: React.FC<CodeEditorProps> = ({ exercise, onComplete }) => {
     if (exercise.testCases && exercise.testCases.length > 0) {
       exercise.testCases.forEach((testCase, index) => {
         try {
-          const iframe = document.createElement("iframe");
-          iframe.style.display = "none";
-          document.body.appendChild(iframe);
-
-          const iframeDoc = iframe.contentDocument || iframe.contentWindow?.document;
-          if (iframeDoc) {
-            iframeDoc.open();
-            iframeDoc.write(code);
-            iframeDoc.close();
-
-            const fullContent = iframeDoc.documentElement.outerHTML;
-            const passed = fullContent.includes(testCase.expectedOutput);
-            
-            results.push({
-              passed,
-              message: passed 
-                ? `✓ Test ${index + 1} passed` 
-                : `✗ Test ${index + 1} failed: Expected "${testCase.expectedOutput}"`
-            });
-          }
-
-          document.body.removeChild(iframe);
+          const passed = parsedContent().includes(testCase.expectedOutput);
+          results.push({
+            passed,
+            message: passed
+              ? `✓ Test ${index + 1} passed`
+              : `✗ Test ${index + 1} failed: Expected "${testCase.expectedOutput}"`
+          });
         } catch (error) {
           results.push({
             passed: false,
@@ -90,7 +59,7 @@ const CodeEditor: React.FC<CodeEditorProps> = ({ exercise, onComplete }) => {
       });
     } else {
       // Simple validation - check if expected output is in the rendered content
-      const passed = output.includes(exercise.expectedOutput);
+      const passed = parsedContent().includes(exercise.expectedOutput);
       results.push({
         passed,
         message: passed 
@@ -124,21 +93,6 @@ const CodeEditor: React.FC<CodeEditorProps> = ({ exercise, onComplete }) => {
   const handleSubmit = () => {
     // First run the code to get output
     try {
-      const iframe = document.createElement("iframe");
-      iframe.style.display = "none";
-      document.body.appendChild(iframe);
-
-      const iframeDoc = iframe.contentDocument || iframe.contentWindow?.document;
-      if (iframeDoc) {
-        iframeDoc.open();
-        iframeDoc.write(code);
-        iframeDoc.close();
-
-        const fullContent = iframeDoc.documentElement.outerHTML;
-        setOutput(fullContent);
-      }
-
-      document.body.removeChild(iframe);
     } catch (error) {
       toast.error("Error running code: " + (error as Error).message);
       setValidationStatus('error');
@@ -171,7 +125,6 @@ const CodeEditor: React.FC<CodeEditorProps> = ({ exercise, onComplete }) => {
 
   const handleReset = () => {
     setCode(exercise.starterCode);
-    setOutput("");
     setShowHints(false);
     setCurrentHintIndex(0);
     setTestResults([]);
