@@ -11,11 +11,10 @@ const YouTubePlayer: React.FC<YouTubePlayerProps> = ({ videoUrl, lessonId, onVid
   const [player, setPlayer] = useState<any>(null);
   const playerInstanceRef = useRef<any>(null); // Keep ref for direct access in intervals
   const [showFocusCheck, setShowFocusCheck] = useState(false);
-  const [watchTime, setWatchTime] = useState(0);
+  const watchTimeRef = useRef(0);
   const playerRef = useRef<HTMLDivElement>(null);
   const intervalRef = useRef<number | null>(null);
   const saveIntervalRef = useRef<number | null>(null);
-  const [videoStartTime, setVideoStartTime] = useState<number>(0);
   const wasFullscreenRef = useRef<boolean>(false); // Track if video was fullscreen
 
   // Extract video ID from YouTube URL
@@ -88,7 +87,6 @@ const YouTubePlayer: React.FC<YouTubePlayerProps> = ({ videoUrl, lessonId, onVid
       const savedProgress = await progressService.getVideoProgress(lessonId);
       if (savedProgress?.currentTime > 0) {
         event.target.seekTo(savedProgress.currentTime, true);
-        setVideoStartTime(savedProgress.currentTime);
       }
     } catch (error) {
       console.error('Failed to load saved video progress:', error);
@@ -145,16 +143,10 @@ const YouTubePlayer: React.FC<YouTubePlayerProps> = ({ videoUrl, lessonId, onVid
       if (playerInstanceRef.current && 
           playerInstanceRef.current.getPlayerState && 
           playerInstanceRef.current.getPlayerState() === 1) {
-        setWatchTime((prev) => {
-          const newTime = prev + 1;
-          
-          // Show focus check every 10 minutes (600 seconds)
-          if (newTime % 600 === 0 && newTime > 0) {
-            showFocusCheckAlert();
-          }
-          
-          return newTime;
-        });
+        watchTimeRef.current += 1;
+        if (watchTimeRef.current % 600 === 0) {
+          showFocusCheckAlert();
+        }
       }
     }, 1000);
   };

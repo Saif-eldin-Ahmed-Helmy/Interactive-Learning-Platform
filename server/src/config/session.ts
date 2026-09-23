@@ -1,8 +1,12 @@
 import session from 'express-session';
 import MongoStore from 'connect-mongo';
 
+if (!process.env.SESSION_SECRET || process.env.SESSION_SECRET.length < 32) {
+  throw new Error('SESSION_SECRET must be set to a random value of at least 32 characters');
+}
+
 export const sessionConfig: session.SessionOptions = {
-  secret: process.env.SESSION_SECRET || 'your-secret-key',
+  secret: process.env.SESSION_SECRET,
   resave: false,
   saveUninitialized: false,
   store: MongoStore.create({

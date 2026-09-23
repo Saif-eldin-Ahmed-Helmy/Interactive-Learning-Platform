@@ -1,7 +1,7 @@
 import express from 'express';
 import session from 'express-session';
 import cors from 'cors';
-import dotenv from 'dotenv';
+import 'dotenv/config';
 import { connectDatabase } from './config/database';
 import { sessionConfig } from './config/session';
 import { errorHandler } from './middleware/errorHandler';
@@ -14,8 +14,6 @@ import adminRoutes from './routes/adminRoutes';
 import quizRoutes from './routes/quizRoutes';
 import userRoutes from './routes/userRoutes';
 import achievementRoutes from './routes/achievementRoutes';
-
-dotenv.config();
 
 const app = express();
 const PORT = process.env.PORT || 5000;

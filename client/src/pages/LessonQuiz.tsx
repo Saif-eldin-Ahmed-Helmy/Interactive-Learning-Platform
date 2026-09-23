@@ -295,7 +295,7 @@ export const LessonQuiz: React.FC = () => {
     return (
       <Container className="mt-5 text-center">
         <h3>Quiz not found</h3>
-        <Button variant="primary" onClick={handleQuit}>
+        <Button variant="primary" onClick={() => handleQuit()}>
           Go Back
         </Button>
       </Container>
