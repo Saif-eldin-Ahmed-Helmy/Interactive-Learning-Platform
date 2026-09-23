@@ -7,8 +7,9 @@ import { sendSuccess, sendError, sendCreated } from '../utils/responses';
 
 export const getAllCourses = async (req: Request, res: Response) => {
   try {
-    // students see only published courses, teachers/admins see all
-    const filter = req.session.userRole === 'student' ? { isPublished: true } : {};
+    const filter = req.session.userRole === 'admin' ? {} : req.session.userRole === 'teacher'
+      ? { $or: [{ isPublished: true }, { creatorId: req.session.userId }] }
+      : { isPublished: true };
     
     const courses = await Course.find(filter)
       .populate('creatorId', 'name email')
@@ -25,7 +26,10 @@ export const getCourseById = async (req: Request, res: Response) => {
   try {
     const { id } = req.params;
 
-    const course = await Course.findById(id)
+    const access = req.session.userRole === 'admin' ? {} : req.session.userRole === 'teacher'
+      ? { $or: [{ isPublished: true }, { creatorId: req.session.userId }] }
+      : { isPublished: true };
+    const course = await Course.findOne({ _id: id, ...access })
       .populate('creatorId', 'name email')
       .populate('modules.lessons');
 
@@ -84,7 +88,14 @@ export const updateCourse = async (req: Request, res: Response) => {
       return sendError(res, 403, 'not authorized to update this course');
     }
 
-    const updatedCourse = await Course.findByIdAndUpdate(id, req.body, { new: true });
+    const allowedFields = ['title', 'description', 'category', 'difficulty', 'estimatedHours', 'thumbnailUrl'];
+    const changes = Object.fromEntries(allowedFields
+      .filter(field => Object.prototype.hasOwnProperty.call(req.body, field))
+      .map(field => [field, req.body[field]]));
+    if (Object.keys(changes).length === 0) {
+      return sendError(res, 400, 'no editable course fields provided');
+    }
+    const updatedCourse = await Course.findByIdAndUpdate(id, { $set: changes }, { new: true, runValidators: true });
 
     return sendSuccess(res, updatedCourse, 'course updated successfully');
   } catch (error) {
@@ -199,7 +210,7 @@ export const getEnrolledCourses = async (req: Request, res: Response) => {
   try {
     const userId = req.session.userId;
 
-    const user = await User.findById(userId).populate('enrolledCourses');
+    const user = await User.findById(userId).populate({ path: 'enrolledCourses', match: { isPublished: true } });
     
     if (!user) {
       return sendError(res, 404, 'user not found');

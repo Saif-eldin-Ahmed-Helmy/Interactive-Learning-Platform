@@ -4,7 +4,7 @@ export const registerValidation = [
   body('name').trim().notEmpty().withMessage('name is required'),
   body('email').isEmail().normalizeEmail().withMessage('valid email is required'),
   body('password').isLength({ min: 6 }).withMessage('password must be at least 6 characters'),
-  body('role').isIn(['student', 'teacher']).withMessage('role must be student or teacher'),
+  body('role').optional().equals('student').withMessage('public registration creates student accounts only'),
 ];
 
 export const loginValidation = [

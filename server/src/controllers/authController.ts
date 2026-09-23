@@ -12,7 +12,7 @@ export const register = async (req: Request, res: Response) => {
       return sendError(res, 400, 'validation failed', errors.array());
     }
 
-    const { name, email, password, role } = req.body;
+    const { name, email, password } = req.body;
 
     // check if user already exists
     const existingUser = await User.findOne({ email });
@@ -28,7 +28,7 @@ export const register = async (req: Request, res: Response) => {
       name,
       email,
       password: hashedPassword,
-      role: role || 'student',
+      role: 'student',
     });
 
     return sendCreated(res, { userId: user._id, role: user.role }, 'user created successfully');

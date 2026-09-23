@@ -6,7 +6,7 @@ export const authService = {
     name: string;
     email: string;
     password: string;
-    role: 'student' | 'teacher';
+    role?: 'student';
   }) {
     const response = await api.post('/auth/register', data);
     return response.data;
