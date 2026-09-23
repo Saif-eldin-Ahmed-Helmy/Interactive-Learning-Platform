@@ -1,6 +1,7 @@
 const assert = require('node:assert/strict');
 const { test } = require('node:test');
 const { gradeQuiz } = require('../dist/utils/gradeQuiz');
+const mongoose = require('mongoose');
 const { Quiz } = require('../dist/models/Quiz');
 const { Lesson } = require('../dist/models/Lesson');
 const { Progress } = require('../dist/models/Progress');
@@ -24,6 +25,7 @@ test('wrong and unanswered responses score zero; weighted scores determine passi
 });
 
 test('quiz submission rejects a course mismatch and does not reward repeat passes', async (t) => {
+  t.mock.method(mongoose.connection, 'transaction', async callback => callback(undefined));
   t.mock.method(Quiz, 'findById', async () => ({ lessonId: 'lesson', questions, passingScore: 70 }));
   t.mock.method(Lesson, 'findById', async () => ({ _id: 'lesson', courseId: 'course' }));
   const rewards = t.mock.method(User, 'findByIdAndUpdate', async () => ({}));
@@ -47,6 +49,7 @@ test('quiz submission rejects a course mismatch and does not reward repeat passe
 });
 
 test('challenge scoring ignores a forged score and grades stored quiz answers', async (t) => {
+  t.mock.method(mongoose.connection, 'transaction', async callback => callback(undefined));
   t.mock.method(Challenge, 'findOne', async () => ({ challengerId: 'student', opponentId: 'opponent', quizId: 'quiz' }));
   t.mock.method(Quiz, 'findById', async () => ({ questions, passingScore: 70 }));
   let savedScore;

@@ -63,7 +63,6 @@ const userSchema = new Schema<UserDocument>(
 );
 
 // index for faster queries
-userSchema.index({ email: 1 });
 userSchema.index({ role: 1 });
 
 // don't return password in json responses

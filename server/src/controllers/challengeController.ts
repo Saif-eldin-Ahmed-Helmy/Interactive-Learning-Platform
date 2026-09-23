@@ -1,3 +1,4 @@
+import mongoose from 'mongoose';
 import { Request, Response } from 'express';
 import { Challenge } from '../models/Challenge';
 import { Quiz } from '../models/Quiz';
@@ -132,58 +133,33 @@ export const submitChallengeResult = async (req: Request, res: Response) => {
     const isChallenger = challenge.challengerId.toString() === userId;
     const updateField = isChallenger ? 'challengerScore' : 'opponentScore';
 
-    const updated = await Challenge.findOneAndUpdate(
-      { _id: id, status: 'accepted', [updateField]: { $exists: false } },
-      { [updateField]: score },
-      { new: true }
-    );
-
-    if (!updated) {
-      return sendError(res, 409, 'result already submitted or challenge completed');
-    }
-
-    // check if both completed
-    if (updated!.challengerScore !== undefined && updated!.opponentScore !== undefined) {
-      const winnerId =
-        updated!.challengerScore === updated!.opponentScore ? null :
-        updated!.challengerScore > updated!.opponentScore
-          ? updated!.challengerId
-          : updated!.opponentId;
-
-      const completed = await Challenge.findOneAndUpdate(
-        { _id: id, status: 'accepted' },
-        { status: 'completed', winnerId, completedAt: new Date() },
-        { new: true }
+    const updated = await mongoose.connection.transaction(async session => {
+      const result = await Challenge.findOneAndUpdate(
+        { _id: id, status: 'accepted', [updateField]: { $exists: false } },
+        { [updateField]: score }, { new: true, session }
       );
-
-      if (!completed) return sendSuccess(res, updated, 'result submitted');
-
-      // notify both users
-      await Notification.create({
-        userId: updated!.challengerId,
-        type: 'challenge',
-        title: 'challenge completed!',
-        message: 'check the results',
-        relatedType: 'challenge',
-        relatedId: id,
-      });
-
-      await Notification.create({
-        userId: updated!.opponentId,
-        type: 'challenge',
-        title: 'challenge completed!',
-        message: 'check the results',
-        relatedType: 'challenge',
-        relatedId: id,
-      });
-
-      // award points to winner
-      if (winnerId) await User.findByIdAndUpdate(winnerId, {
-        $inc: { points: 30 },
-      });
-    }
-
+      if (!result) return null;
+      if (result.challengerScore !== undefined && result.opponentScore !== undefined) {
+        const winnerId = result.challengerScore === result.opponentScore ? null :
+          result.challengerScore > result.opponentScore ? result.challengerId : result.opponentId;
+        const completed = await Challenge.findOneAndUpdate(
+          { _id: id, status: 'accepted' },
+          { status: 'completed', winnerId, completedAt: new Date() }, { new: true, session }
+        );
+        if (completed) {
+          if (winnerId) await User.findByIdAndUpdate(winnerId, { $inc: { points: 30 } }, { session });
+          await Notification.create([result.challengerId, result.opponentId].map(userId => ({
+            userId, type: 'challenge', title: 'challenge completed!', message: 'check the results',
+            relatedType: 'challenge', relatedId: id
+          })), { session, ordered: true });
+          return completed;
+        }
+      }
+      return result;
+    });
+    if (!updated) return sendError(res, 409, 'result already submitted or challenge completed');
     return sendSuccess(res, updated, 'result submitted');
+
   } catch (error) {
     console.error('submit result error:', error);
     return sendError(res, 500, 'failed to submit result');

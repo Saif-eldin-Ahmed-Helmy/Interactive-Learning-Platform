@@ -1,3 +1,4 @@
+import mongoose from 'mongoose';
 import { Request, Response } from 'express';
 import { Quiz } from '../models/Quiz';
 import { Progress } from '../models/Progress';
@@ -68,17 +69,20 @@ export const submitQuizAttempt = async (req: Request, res: Response) => {
     }
 
     const attempt = { quizId, lessonId, score, answers, attemptedAt: new Date(), passed };
-    // Atomically claim the first pass to prevent concurrent duplicate rewards.
-    const firstPass = passed && await Progress.findOneAndUpdate(
-      { _id: progress._id, quizAttempts: { $not: { $elemMatch: { quizId, passed: true } } } },
-      { $push: { quizAttempts: attempt } },
-      { new: true }
-    );
-    if (firstPass) {
-      await User.findByIdAndUpdate(userId, { $inc: { points: score } });
-    } else {
-      await Progress.updateOne({ _id: progress._id }, { $push: { quizAttempts: attempt } });
-    }
+    await mongoose.connection.transaction(async session => {
+      // Atomically claim the first pass to prevent concurrent duplicate rewards.
+      const firstPass = passed && await Progress.findOneAndUpdate(
+        { _id: progress._id, quizAttempts: { $not: { $elemMatch: { quizId, passed: true } } } },
+        { $push: { quizAttempts: attempt } },
+        { new: true, session }
+      );
+      if (firstPass) {
+        await User.findByIdAndUpdate(userId, { $inc: { points: score } }, { session });
+      } else {
+        await Progress.updateOne({ _id: progress._id }, { $push: { quizAttempts: attempt } }, { session });
+      }
+
+    });
 
     return sendSuccess(res, {
       score,
