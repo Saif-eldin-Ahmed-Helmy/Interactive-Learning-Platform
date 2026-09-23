@@ -1,5 +1,6 @@
 import { Request, Response } from 'express';
 import { Progress } from '../models/Progress';
+import { Lesson } from '../models/Lesson';
 import { Course } from '../models/Course';
 import { User } from '../models/User';
 import { Badge } from '../models/Badge';
@@ -67,16 +68,21 @@ export const getCourseProgress = async (req: Request, res: Response) => {
 export const markLessonComplete = async (req: Request, res: Response) => {
   try {
     const { lessonId } = req.params;
-    const { timeSpent } = req.body;
+    const { timeSpent = 0 } = req.body;
+    if (typeof timeSpent !== 'number' || !Number.isFinite(timeSpent) || timeSpent < 0) return sendError(res, 400, 'invalid time spent');
     const userId = req.session.userId;
 
     if (!userId) {
       return sendError(res, 401, 'unauthorized');
     }
 
-    // find progress record (need to know which course)
+    const lesson = await Lesson.findById(lessonId);
+    if (!lesson) return sendError(res, 404, 'lesson not found');
+
+    // Progress belongs to the lesson's course.
     const progress = await Progress.findOne({
       userId,
+      courseId: lesson.courseId,
       'completedLessons.lessonId': { $ne: lessonId },
     });
 
@@ -95,7 +101,7 @@ export const markLessonComplete = async (req: Request, res: Response) => {
     const course = await Course.findById(progress.courseId);
     let totalLessons = 0;
     course?.modules.forEach((m) => (totalLessons += m.lessons.length));
-    progress.overallProgress = (progress.completedLessons.length / totalLessons) * 100;
+    progress.overallProgress = (progress.completedLessons.length / Math.max(1, totalLessons)) * 100;
 
     // update last accessed
     progress.lastAccessedAt = new Date();
@@ -303,13 +309,16 @@ export const getNextLesson = async (req: Request, res: Response) => {
 export const updateLessonProgress = async (req: Request, res: Response) => {
   try {
     const { courseId, lessonId } = req.params;
-    const { timeSpent } = req.body;
+    const { timeSpent = 0 } = req.body;
+    if (typeof timeSpent !== 'number' || !Number.isFinite(timeSpent) || timeSpent < 0) return sendError(res, 400, 'invalid time spent');
     const userId = req.session.userId;
 
     if (!userId) {
       return sendError(res, 401, 'unauthorized');
     }
 
+    const lesson = await Lesson.findById(lessonId);
+    if (!lesson || lesson.courseId.toString() !== courseId) return sendError(res, 400, 'lesson does not belong to course');
     let progress = await Progress.findOne({ userId, courseId });
 
     if (!progress) {
@@ -332,7 +341,7 @@ export const updateLessonProgress = async (req: Request, res: Response) => {
       const course = await Course.findById(courseId);
       let totalLessons = 0;
       course?.modules.forEach(m => totalLessons += m.lessons.length);
-      progress.overallProgress = Math.round((progress.completedLessons.length / totalLessons) * 100);
+      progress.overallProgress = Math.round((progress.completedLessons.length / Math.max(1, totalLessons)) * 100);
 
       progress.lastAccessedAt = new Date();
       await progress.save();
@@ -370,12 +379,14 @@ export const saveVideoProgress = async (req: Request, res: Response) => {
       return sendError(res, 401, 'unauthorized');
     }
 
-    if (currentTime === undefined || currentTime < 0) {
+    if (typeof currentTime !== 'number' || !Number.isFinite(currentTime) || currentTime < 0) {
       return sendError(res, 400, 'invalid current time');
     }
 
     // Find progress record for this user's course containing this lesson
-    const progress = await Progress.findOne({ userId });
+    const lesson = await Lesson.findById(lessonId);
+    if (!lesson) return sendError(res, 404, 'lesson not found');
+    const progress = await Progress.findOne({ userId, courseId: lesson.courseId });
 
     if (!progress) {
       return sendError(res, 404, 'progress record not found');
@@ -419,7 +430,9 @@ export const getVideoProgress = async (req: Request, res: Response) => {
       return sendError(res, 401, 'unauthorized');
     }
 
-    const progress = await Progress.findOne({ userId });
+    const lesson = await Lesson.findById(lessonId);
+    if (!lesson) return sendError(res, 404, 'lesson not found');
+    const progress = await Progress.findOne({ userId, courseId: lesson.courseId });
 
     if (!progress) {
       return sendSuccess(res, { currentTime: 0 });

@@ -2,6 +2,8 @@ import { Request, Response } from 'express';
 import { Quiz } from '../models/Quiz';
 import { Progress } from '../models/Progress';
 import { User } from '../models/User';
+import { Lesson } from '../models/Lesson';
+import { gradeQuiz } from '../utils/gradeQuiz';
 import { sendSuccess, sendError } from '../utils/responses';
 
 export const getQuizByLessonId = async (req: Request, res: Response) => {
@@ -46,11 +48,17 @@ export const submitQuizAttempt = async (req: Request, res: Response) => {
       return sendError(res, 404, 'quiz not found');
     }
 
-    // Calculate score - Always give full marks for quiz completion
-    const totalPoints = quiz.questions.reduce((sum, q) => sum + q.points, 0);
-    const score = totalPoints; // Give full marks
-    const percentage = 100; // Always 100%
-    const passed = true; // Always pass
+    const lesson = await Lesson.findById(quiz.lessonId);
+    if (!lesson || String(lesson._id) !== lessonId || String(lesson.courseId) !== courseId) {
+      return sendError(res, 400, 'quiz does not belong to this lesson and course');
+    }
+    let result;
+    try {
+      result = gradeQuiz(quiz.questions, answers, quiz.passingScore);
+    } catch (error) {
+      return sendError(res, 400, (error as Error).message);
+    }
+    const { score, totalPoints, percentage, passed } = result;
 
     // Find or create progress record
     let progress = await Progress.findOne({ userId, courseId });
@@ -59,29 +67,17 @@ export const submitQuizAttempt = async (req: Request, res: Response) => {
       return sendError(res, 404, 'progress record not found - please enroll in the course first');
     }
 
-    // Save quiz attempt
-    progress.quizAttempts.push({
-      quizId: quizId,
-      lessonId: lessonId,
-      score: score,
-      answers: answers,
-      attemptedAt: new Date(),
-      passed: passed,
-    });
-
-    await progress.save();
-
-    // Award points if passed (only first time passing)
-    if (passed) {
-      const previousPasses = progress.quizAttempts.filter(
-        qa => qa.quizId === quizId && qa.passed && qa.attemptedAt < new Date()
-      );
-      
-      if (previousPasses.length === 1) { // This is the first pass
-        await User.findByIdAndUpdate(userId, {
-          $inc: { points: score }
-        });
-      }
+    const attempt = { quizId, lessonId, score, answers, attemptedAt: new Date(), passed };
+    // Atomically claim the first pass to prevent concurrent duplicate rewards.
+    const firstPass = passed && await Progress.findOneAndUpdate(
+      { _id: progress._id, quizAttempts: { $not: { $elemMatch: { quizId, passed: true } } } },
+      { $push: { quizAttempts: attempt } },
+      { new: true }
+    );
+    if (firstPass) {
+      await User.findByIdAndUpdate(userId, { $inc: { points: score } });
+    } else {
+      await Progress.updateOne({ _id: progress._id }, { $push: { quizAttempts: attempt } });
     }
 
     return sendSuccess(res, {

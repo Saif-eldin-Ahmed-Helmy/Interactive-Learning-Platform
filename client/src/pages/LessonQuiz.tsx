@@ -139,22 +139,6 @@ export const LessonQuiz: React.FC = () => {
     setShowScore(true);
     setSubmittingQuiz(true);
 
-    const totalPoints = quiz.questions.reduce((sum, q) => sum + q.points, 0);
-    const percentage = Math.round((score / totalPoints) * 100);
-    const passed = percentage >= quiz.passingScore;
-
-    console.log('=== Quiz Submission Debug ===');
-    console.log('Frontend Score:', score);
-    console.log('Total Points:', totalPoints);
-    console.log('Frontend Percentage:', percentage);
-    console.log('Frontend Passed:', passed);
-    console.log('User Answers Being Sent:', userAnswers);
-    console.log('Quiz Questions:', quiz.questions.map((q, i) => ({
-      question: i + 1,
-      correctAnswer: q.correctAnswerIndex,
-      userAnswer: userAnswers[i]
-    })));
-
     try {
       // Send the actual answers collected during the game
       const result = await quizService.submitQuizAttempt(
@@ -164,7 +148,8 @@ export const LessonQuiz: React.FC = () => {
         courseId
       );
 
-      console.log('Backend Response:', result);
+      const { percentage, passed } = result;
+      setScore(result.score);
 
       if (passed) {
         await markLessonComplete();
@@ -193,7 +178,6 @@ export const LessonQuiz: React.FC = () => {
     const selectedAnswer = currentQuestion.options[selectedIndex];
     const isCorrect = selectedIndex === currentQuestion.correctAnswerIndex;
 
-    console.log(`Q${currentQuestionIndex + 1}: Selected=${selectedIndex}, Correct=${currentQuestion.correctAnswerIndex}, IsCorrect=${isCorrect}`);
 
     // Track the user's answer
     const newAnswers = [...userAnswers];

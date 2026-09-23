@@ -4,7 +4,7 @@ A React and Express/MongoDB course prototype with lessons, quizzes, progress, ch
 
 ## Local setup
 
-Use Node.js and a local MongoDB instance. Copy `server/.env.example` to `server/.env` and set a random `SESSION_SECRET` of at least 32 characters. Adjust `MONGODB_URI` if MongoDB is elsewhere.
+Use Node.js 22 and a local MongoDB instance. Copy `server/.env.example` to `server/.env` and set a random `SESSION_SECRET` of at least 32 characters. Adjust `MONGODB_URI` if MongoDB is elsewhere.
 
 ```powershell
 cd server
@@ -28,3 +28,7 @@ The client defaults to `http://localhost:5000/api`; set `VITE_API_URL` to overri
 ## Features
 
 Practice quizzes, peer challenges, course progress, and interactive code previews.
+
+## Checks
+
+`npm test` in `server/` compiles TypeScript and exercises grading, reward replay protection, session configuration, and challenge validation with model calls stubbed. `npm run build` in `client/` checks TypeScript and builds the Vite client.

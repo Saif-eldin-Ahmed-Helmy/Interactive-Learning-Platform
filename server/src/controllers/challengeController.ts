@@ -5,6 +5,7 @@ import { Lesson } from '../models/Lesson';
 import { Notification } from '../models/Notification';
 import { User } from '../models/User';
 import { Badge } from '../models/Badge';
+import { gradeQuiz } from '../utils/gradeQuiz';
 import { sendSuccess, sendError, sendCreated } from '../utils/responses';
 
 export const getMyChallenges = async (req: Request, res: Response) => {
@@ -34,6 +35,8 @@ export const createChallenge = async (req: Request, res: Response) => {
     if (!opponentId || !quizId) {
       return sendError(res, 400, 'opponent and quiz are required');
     }
+
+    if (opponentId === challengerId) return sendError(res, 400, 'choose another participant');
 
     const challenge = await Challenge.create({
       challengerId,
@@ -104,12 +107,8 @@ export const declineChallenge = async (req: Request, res: Response) => {
 export const submitChallengeResult = async (req: Request, res: Response) => {
   try {
     const { id } = req.params;
-    const { score } = req.body;
+    const { answers } = req.body;
     const userId = req.session.userId;
-
-    if (!Number.isInteger(score) || score < 0 || score > 100) {
-      return sendError(res, 400, 'score must be an integer from 0 to 100');
-    }
 
     const challenge = await Challenge.findOne({
       _id: id,
@@ -119,6 +118,15 @@ export const submitChallengeResult = async (req: Request, res: Response) => {
 
     if (!challenge) {
       return sendError(res, 404, 'active challenge not found');
+    }
+
+    const quiz = await Quiz.findById(challenge.quizId);
+    if (!quiz) return sendError(res, 404, 'quiz not found');
+    let score;
+    try {
+      score = gradeQuiz(quiz.questions, answers, quiz.passingScore).percentage;
+    } catch (error) {
+      return sendError(res, 400, (error as Error).message);
     }
 
     const isChallenger = challenge.challengerId.toString() === userId;
@@ -137,6 +145,7 @@ export const submitChallengeResult = async (req: Request, res: Response) => {
     // check if both completed
     if (updated!.challengerScore !== undefined && updated!.opponentScore !== undefined) {
       const winnerId =
+        updated!.challengerScore === updated!.opponentScore ? null :
         updated!.challengerScore > updated!.opponentScore
           ? updated!.challengerId
           : updated!.opponentId;
@@ -169,7 +178,7 @@ export const submitChallengeResult = async (req: Request, res: Response) => {
       });
 
       // award points to winner
-      await User.findByIdAndUpdate(winnerId, {
+      if (winnerId) await User.findByIdAndUpdate(winnerId, {
         $inc: { points: 30 },
       });
     }
