@@ -53,18 +53,18 @@ export default function LandingPage(): JSX.Element {
     <main>
       {/* Hero */}
       <section className="hero-section text-white" aria-labelledby="hero-heading">
-        <div className="container">
+        <div className="container hero-container">
           <div className="row align-items-center g-0">
             <div className="col-lg-6">
-              <h1 id="hero-heading" className="display-5 fw-bold">
+              <h1 id="hero-heading" className="hero-title fw-bold">
                 Unlock Your Coding. Start Your Front End Journey
               </h1>
-              <p className="lead">
+              <p className="lead hero-lead">
                 Video lessons, quizzes and code practice — build real
                 skills with short, focused lessons.
               </p>
 
-              <div className="d-flex gap-2 mb-3">
+              <div className="d-flex gap-3 mb-4">
                 <a
                   href="#courses"
                   className="btn btn-success btn-lg hero-btn"
@@ -89,7 +89,7 @@ export default function LandingPage(): JSX.Element {
                 </a>
               </div>
 
-              <ul className="list-inline small text-white-50">
+              <ul className="list-inline hero-tags text-white-50">
                 <li className="list-inline-item">HTML5</li>
                 <li className="list-inline-item">•</li>
                 <li className="list-inline-item">CSS3</li>

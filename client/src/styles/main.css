@@ -42,7 +42,34 @@ html, body {
 }
 
 .hero-btn {
-    border-radius: 20px;
+    border-radius: 999px;
+}
+
+/* Scale the hero with the viewport so it fills large screens. */
+.hero-container {
+    max-width: 1560px;
+    padding-inline: clamp(1.5rem, 5vw, 5rem);
+}
+
+.hero-title {
+    font-size: clamp(2.5rem, 4.3vw, 4.75rem);
+    line-height: 1.08;
+    margin-bottom: 1.5rem;
+}
+
+.hero-lead {
+    font-size: clamp(1.15rem, 1.55vw, 1.6rem);
+    max-width: 36ch;
+    margin-bottom: 2rem;
+}
+
+.hero-section .hero-btn {
+    font-size: clamp(1.1rem, 1.25vw, 1.35rem);
+    padding: 0.8rem 2rem;
+}
+
+.hero-tags {
+    font-size: clamp(0.95rem, 1vw, 1.1rem);
 }
 
 /* Shared Section Base */
