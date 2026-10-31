@@ -23,7 +23,7 @@ export const getUserProfile = async (req: Request, res: Response) => {
     }
 
     // Fetch earned badges
-    const badges = await Badge.find({ userId, earned: true }).limit(6);
+    const badges = await Badge.find({ userId }).sort({ earnedAt: -1 }).limit(6);
 
     // Count completed courses
     const completedCourses = await Progress.countDocuments({

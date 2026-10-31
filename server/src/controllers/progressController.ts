@@ -187,7 +187,7 @@ const checkModuleCompletion = async (userId: string, courseId: string, course: a
             description: `completed all lessons in ${module.title}`,
             achievementType: 'module_complete',
             relatedId: courseId,
-            iconUrl: '/icons/module-badge.png',
+            iconUrl: '🏅',
           });
 
           // create notification
@@ -225,7 +225,7 @@ const checkModuleCompletion = async (userId: string, courseId: string, course: a
           description: `completed entire ${course.title} course`,
           achievementType: 'course_complete',
           relatedId: courseId,
-          iconUrl: '/icons/course-medal.png',
+          iconUrl: '🏆',
         });
 
         await Notification.create({
@@ -255,7 +255,7 @@ export const getNextLesson = async (req: Request, res: Response) => {
     }
 
     const progress = await Progress.findOne({ userId, courseId });
-    const course = await Course.findById(courseId).populate('modules.lessons');
+    const course = await Course.findById(courseId);
 
     if (!course) {
       return sendError(res, 404, 'course not found');

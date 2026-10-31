@@ -140,3 +140,14 @@ dist
 .vscode/
 .env.*
 !.env.example
+
+# Local agent state and generated caches
+.agents/
+.codex/
+.gemini/
+.config/
+*.iml
+*.sqlite
+*.sqlite3
+__pycache__/
+.demo/

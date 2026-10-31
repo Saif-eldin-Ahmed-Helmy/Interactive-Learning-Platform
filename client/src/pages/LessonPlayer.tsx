@@ -111,7 +111,8 @@ export const LessonPlayer: React.FC = () => {
 
       // Enroll user in course if not already enrolled
       try {
-        await courseService.enrollInCourse(courseId!);
+        const enrolled = await courseService.getEnrolledCourses();
+        if (!enrolled.some(item => item._id === courseId)) await courseService.enrollInCourse(courseId!);
         console.log('User enrolled in course');
       } catch (enrollError: any) {
         // If already enrolled, that's fine

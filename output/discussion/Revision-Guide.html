@@ -1,0 +1,241 @@
+<!doctype html><html lang="en"><meta charset="utf-8"><title>DEPI Discussion Revision Guide</title><style>body{font-family:Arial,sans-serif;color:#15314b;font-size:11pt;line-height:1.5;max-width:850px;margin:40px auto;padding:0 20px}h1{font-size:27pt;line-height:1.15;color:#116bcc;margin-bottom:24px}h2{font-size:19pt;color:#116bcc;border-bottom:1px solid #d3e2ed;padding-bottom:8px;margin-top:35px;break-after:avoid}h3{font-size:14pt;margin-top:23px;break-after:avoid}p{orphans:3;widows:3}strong{color:#102c45}table{border-collapse:collapse;width:100%;font-size:10pt;margin:18px 0}th,td{text-align:left;padding:9px;border-bottom:1px solid #d4e0e9;vertical-align:top}th{background:#edf5fc}pre{background:#f1f5f8;padding:14px;font-size:9pt;white-space:pre-wrap;break-inside:avoid}code{font-family:Consolas,monospace;font-size:.9em}a{color:#116bcc;overflow-wrap:anywhere}li{margin:6px 0}@media print{body{margin:0;padding:0;max-width:none}h2{break-before:auto}table,tr{break-inside:avoid}a{color:#15314b;text-decoration:none}}</style><body><h1>DEPI React training: discussion and revision guide</h1>
+<p><strong>Saif eldin Ahmed Helmy · 420230168</strong><br><strong>Maaly Samir elsaied · 420230295</strong><br>Individual discussions: Sunday, 1 November 2026, 09:00, according to the college email.</p>
+<h2>1. What to bring and how to use this pack</h2>
+<p>Bring your training certificate, the supplied course outline, your own presentation, and a copy of the team project. The email requires at least 10 slides per person and readiness to discuss both the course and projects. Each supplied deck contains 16 main slides and two optional backup slides. Each person presents independently. You do not split one presentation between you.</p>
+<p>Open your PowerPoint in Presenter View to see the speaking notes. Read the notes to understand the material, then rehearse from the slide titles. Aim for roughly 10-12 minutes unless the examiner specifies another duration. Do not memorize every sentence. A natural answer has four parts: the concept, its purpose, an example from your work, and a limitation where relevant.</p>
+<p>The explanations here describe the current repository inspected on 28 October 2026. It includes revisions after the original team PDF. Describe training-era work from your own recollection, and avoid implying that every later fix or test existed during the training. Individual responsibilities below come from your confirmation, rather than an inference from commit authorship.</p>
+<h2>2. Your project in one minute</h2>
+<p>The Interactive Learning Platform is a team-built web application prototype for learning frontend development. It organizes courses into modules and lessons. A learner can sign in, browse courses, open video lessons, attempt lesson quizzes, practice HTML/CSS/JavaScript in a browser preview, and view progress information. The profile and achievement screens make learning activity visible through indicators such as hours, streaks and earned badges.</p>
+<p>The intended problem is passive video watching and fragmented practice across different tools. The platform puts learning and practice into one interface. This is a project rationale, not proof that the system improved educational outcomes.</p>
+<p><strong>Saif&#39;s opening:</strong> “I completed the DEPI React Frontend Web Developer training. In our team project, I was responsible for the backend and the main lesson page, including video playback and the organization of topics and subtopics. I will explain how the interface communicates with the server and how lesson progress works.”</p>
+<p><strong>Maaly&#39;s opening:</strong> “I completed the DEPI React Frontend Web Developer training. In our team project, I worked on the landing page, profile and achievements. I will explain how these screens support the learner journey and how I used React state, API data and responsive layout.”</p>
+<h2>3. Architecture and a complete request</h2>
+<p>The client uses React 18, TypeScript, Vite, Bootstrap/React Bootstrap, React Router and Axios. The server uses Node.js, Express, TypeScript, Mongoose and MongoDB. Authentication uses express-session and a MongoDB-backed session store. It does not use JWT authentication in this checkout.</p>
+<p>Consider opening a course:</p>
+<ol>
+<li>React Router matches <code>/learn/:courseId</code> and renders <code>LessonPlayer</code> behind <code>ProtectedRoute</code>.</li>
+<li>The page reads the course ID with <code>useParams</code> and calls the course service.</li>
+<li>The shared Axios instance uses the configured API base URL and <code>withCredentials: true</code>.</li>
+<li>Express matches <code>GET /api/courses/:id</code>. Session middleware has already read the session cookie.</li>
+<li>Authentication middleware checks whether the user is logged in. The controller applies the relevant course access filter.</li>
+<li>Mongoose queries the course and populates its module lesson references.</li>
+<li>The server returns JSON containing a success flag and data.</li>
+<li>React stores the response in state and renders the lesson list and selected content.</li>
+</ol>
+<p><strong>Frontend vs backend:</strong> the frontend handles browser interaction and presentation. The backend applies server-side rules and coordinates persistent data. A browser screen can guide users, but server checks must protect data because callers can make requests without using the interface.</p>
+<h3>Main data relationships</h3>
+<table>
+<thead>
+<tr>
+<th>Entity</th>
+<th>Purpose</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>User</td>
+<td>Identity, role and stored learning indicators</td>
+</tr>
+<tr>
+<td>Course</td>
+<td>Course details and ordered modules</td>
+</tr>
+<tr>
+<td>Module</td>
+<td>A grouping within a course, with lesson references</td>
+</tr>
+<tr>
+<td>Lesson</td>
+<td>Course content, video URL, optional exercise and quiz reference</td>
+</tr>
+<tr>
+<td>Quiz</td>
+<td>Questions, options, correct indices, point weights and passing threshold</td>
+</tr>
+<tr>
+<td>Progress</td>
+<td>One user&#39;s progress in one course, including completed lessons and quiz attempts</td>
+</tr>
+<tr>
+<td>Achievement / Badge</td>
+<td>Achievement definitions and earned badge records</td>
+</tr>
+</tbody></table>
+<p>The Progress model has a unique compound index on userId and courseId. That expresses the intended rule of one progress document per learner per course. A schema describes stored data; an interface describes TypeScript expectations. Neither should be confused with a visual page template.</p>
+<h2>4. Saif&#39;s project revision</h2>
+<h3>Lesson selection and modules</h3>
+<p><code>LessonPlayer.tsx</code> keeps <code>currentModuleIndex</code> and <code>currentLessonIndex</code> in state. It uses those indices to get the selected lesson from <code>course.modules</code>. Clicking the sidebar updates the selection. Completed lesson IDs affect the completion markers. <code>showCodeEditor</code> switches between video and practice. These values change what the user sees, so state is appropriate.</p>
+<p>The page fetches course details, attempts enrollment, requests the next lesson, and loads completed lessons. It uses services instead of putting every Axios call directly into the JSX. The UI checks previous lessons and quiz status before offering normal progression. This guidance should not be described as complete server-enforced anti-cheating protection.</p>
+<h3>Video lifecycle</h3>
+<p><code>YouTubePlayer.tsx</code> receives <code>videoUrl</code>, <code>lessonId</code>, and <code>onVideoComplete</code> as props. It extracts the YouTube ID and creates a player through the YouTube IFrame API. When ready, it requests saved playback time and seeks there. It attempts to save the playback position every 10 seconds. At the end of the video, it invokes the parent callback. The parent decides whether to open a quiz or proceed.</p>
+<p>Refs hold the player instance and interval handles. Updating a ref does not request a rerender. Effects initialize the external player and clean up timers and the player instance. This avoids leaving old resources active after navigation. Saved playback position means “where the video was,” not proof of focused learning.</p>
+<h3>Quiz and reward flow</h3>
+<p>The lesson quiz collects an array of selected option indices. The API route is <code>POST /api/quiz/:quizId/submit</code>. The controller loads the stored quiz, verifies its relationship with the supplied lesson and course, and calls <code>gradeQuiz</code>.</p>
+<p>The grader validates answer count and option ranges. An answer of -1 represents an unanswered question. It sums question point weights and calculates the percentage. For example, earning 6 out of 10 weighted points gives 60%. The server compares the unrounded ratio with the passing threshold, so an apparently rounded percentage can differ from the exact pass comparison near a boundary.</p>
+<p>The controller records attempts and uses a transaction to coordinate first-pass quiz rewards. A repeat pass should not repeatedly grant the same quiz points. Do not trust a score sent by the client; the server calculates the score from stored answers. The current quiz response still includes correct-answer information for client feedback, so server grading alone does not make this a secure examination system.</p>
+<p>The separate <code>/quiz</code> page has local demonstration questions. It is different from <code>/lesson-quiz/:lessonId</code>, which loads a lesson-linked quiz from the API.</p>
+<h3>Sessions and roles</h3>
+<p>Registration hashes the password with bcrypt. Login checks the hash and stores userId and userRole in the session. A session cookie associates later requests with that server-side session. <code>HttpOnly</code> reduces direct access to the cookie from browser JavaScript. <code>sameSite: &#39;lax&#39;</code> and secure cookies in production are part of the configuration. These settings do not establish that the whole application has undergone a security audit.</p>
+<p>Authentication means identifying a user. Authorization means deciding what that user may do. Course creation uses authentication and teacher-role middleware. Administrative actions require the appropriate role. <code>ProtectedRoute</code> improves navigation but does not replace API authorization.</p>
+<h3>Files to revisit</h3>
+<p>Read <code>client/src/pages/LessonPlayer.tsx</code>, <code>client/src/components/YouTubePlayer.tsx</code>, <code>client/src/services/api.ts</code>, <code>server/src/server.ts</code>, <code>server/src/controllers/quizController.ts</code>, <code>server/src/controllers/progressController.ts</code>, and <code>server/src/config/session.ts</code>. Start with a named function and trace its caller and service; do not try to memorize every line in the repository.</p>
+<h2>5. Maaly&#39;s project revision</h2>
+<h3>Landing page</h3>
+<p><code>LandingPage.tsx</code> composes the hero, introductory sections and course summaries using Bootstrap layout and local project artwork. <code>useNavigate</code> connects the main call to action to the course route. Semantic sections and a clear headline help organize the content.</p>
+<p>Its <code>COURSES</code> array is local placeholder content. That differs from the authenticated Courses page, which calls backend services. Do not describe the landing page course summaries as live database results. The existing marketing copy mentions an “intelligent guide,” but an implemented AI tutor is not present in the inspected code.</p>
+<h3>Profile loading and editing</h3>
+<p><code>Profile.tsx</code> starts with loading state, calls <code>userService.getProfile()</code> in an effect, and stores the result as <code>profileData</code>. It renders account details and stored learning indicators. On a failed request, it offers a retry. An empty badges list has an explanatory message.</p>
+<p>For name editing, <code>editingName</code> decides which UI appears and <code>newName</code> holds the draft. The input is controlled: its value comes from state, and onChange updates that state. Save rejects a blank trimmed value and calls <code>PUT /api/users/profile/name</code>. Success replaces the name in local profile state and exits edit mode. Cancel restores the saved name.</p>
+<p>The update uses object spreading at both the profile and user levels. Copying only the outer object while mutating its nested user would still mutate the original nested object. The existing approach creates a new nested user object.</p>
+<p>The profile displays treeLevel, but it does not itself calculate how a learner earns a new tree level. Login updates the streak in the backend. Stored study hours are not an independently verified record of focused study. Explain what the UI displays without inventing a progression formula.</p>
+<h3>Achievements</h3>
+<p><code>Achievements.tsx</code> requests data through <code>achievementService</code>. It stores data, loading, error, and selectedCategory. The filtered list is derived from the selected category: all achievements or the matching group. Mapping the result produces cards with stable <code>_id</code> keys.</p>
+<p>The backend combines achievement templates, existing badges and learning progress. Supported requirement types compare completed lesson/course counts or streaks with thresholds. It returns each item&#39;s earned status and current/required progress, grouped categories and summary totals. The current <code>all_courses</code> case remains incomplete.</p>
+<p>Clicking a locked item shows how far the learner is from its requirement. Clicking an earned item shows an unlocked message. Clicking does not award the badge. The inspected page does not implement the old PDF&#39;s social-sharing feature or rarity tiers.</p>
+<h3>Files to revisit</h3>
+<p>Read <code>client/src/pages/LandingPage.tsx</code>, <code>Profile.tsx</code>, <code>Achievements.tsx</code>, <code>client/src/services/userService.ts</code>, <code>achievementService.ts</code>, and <code>server/src/controllers/achievementController.ts</code>. Trace initial loading, one successful interaction and one failure state in each dynamic screen.</p>
+<h2>6. Curriculum revision, topic by topic</h2>
+<p>The timetable provides subject names and hours, not a detailed lesson transcript. The following is a focused revision syllabus for those subjects. It does not claim your instructor covered every example below.</p>
+<h3>Prompt engineering - 6 hours</h3>
+<p>A useful prompt states a goal, relevant context, constraints and the required output. For coding, include the existing code or interface contract and ask for verification. Example: “Explain this React effect, identify its external dependency, and show what cleanup it needs.” Inspect generated code and test claims. Do not paste credentials or private user data into a prompt. Project link: this can support planning and review, but the repository does not prove exactly which AI tools the team used.</p>
+<h3>HTML5 essentials - 12 hours</h3>
+<p>HTML describes document structure. Use meaningful elements such as main, section, nav, heading, form, label, button and a. A button performs an action; an anchor represents navigation. Give inputs associated labels and images meaningful alt text when they communicate content. Form attributes can provide useful browser checks, but server validation remains necessary. Project link: the landing page sections and profile form.</p>
+<h3>CSS essentials - 9 hours</h3>
+<p>The box model is content, padding, border and margin. <code>box-sizing: border-box</code> includes padding and border within the declared dimensions. The cascade and selector specificity determine which declarations apply. Flexbox helps arrange items along a primary axis; Grid handles rows and columns together. Media queries adapt layout to available space. Project link: lesson layout, practice editor columns and Bootstrap styles. Being responsive requires checking actual screens; choosing Bootstrap alone does not prove every page works at every width.</p>
+<h3>Principles of UX/UI - 3 hours</h3>
+<p>UI concerns visible controls and presentation. UX concerns whether people can understand and complete tasks. Explain hierarchy, predictable navigation, readable labels, loading/error feedback and recovery. Accessibility includes keyboard operation, labels, visible focus and sufficient contrast. Project link: landing call to action, profile save/cancel, retry state and locked achievement feedback. Avoid claiming formal WCAG compliance without an audit.</p>
+<h3>JavaScript fundamentals - 15 hours</h3>
+<p><code>const</code> prevents rebinding a variable; it does not freeze an object. <code>let</code> allows reassignment. Know primitive values, arrays, objects, functions, scope, closures and equality. <code>===</code> compares without the coercion performed by <code>==</code>. <code>map</code> transforms items, <code>filter</code> selects items and <code>reduce</code> combines values. Destructuring reads fields concisely; spread copies one level. Event handlers respond to interaction.</p>
+<p>Promises describe eventual results. <code>async</code> functions return promises; <code>await</code> pauses that function&#39;s continuation while the rest of the application can continue. Use try/catch for request failure and finally for cleanup such as ending loading state. Project link: course fetching, profile saving and achievement filtering. A closure remembers variables from its surrounding scope; stale values in callbacks can explain unexpected state behaviour.</p>
+<pre><code class="language-javascript">const names = courses.map(course =&gt; course.title);
+const beginnerCourses = courses.filter(course =&gt; course.difficulty === &#39;beginner&#39;);
+async function loadCourses() {
+  try { return await courseService.getAllCourses(); }
+  catch (error) { throw error; }
+}
+</code></pre>
+<p>The catch above only rethrows for illustration. Real code should handle the failure where useful rather than add a redundant catch solely for appearance.</p>
+<h3>TypeScript - 6 hours</h3>
+<p>TypeScript statically checks JavaScript programs. Know type aliases, interfaces, unions, optional properties, generics and type narrowing. <code>User | null</code> means code must account for the absence of a user. <code>any</code> disables many useful checks. A type assertion tells the compiler what you believe; it does not validate data at runtime. Project link: Course/User interfaces and typed component props. Runtime validation uses tools such as Zod, express-validator or Mongoose validation at the appropriate boundaries.</p>
+<pre><code class="language-typescript">interface LessonSummary { id: string; title: string; minutes: number }
+function label(lesson: LessonSummary): string {
+  return `${lesson.title} (${lesson.minutes} min)`;
+}
+</code></pre>
+<h3>Bootstrap - 12 hours</h3>
+<p>Bootstrap offers styles, utilities and a responsive grid. The grid uses containers, rows and columns, with 12 columns per row. A layout such as <code>col-12 col-md-6</code> occupies the full row on small screens and half from the medium breakpoint onward. React Bootstrap wraps Bootstrap patterns as React components. Project link: Row/Col/Card on the profile page, course cards and the navbar. Custom CSS still controls important project-specific layouts.</p>
+<h3>React - 33 hours</h3>
+<p>A component is a function that returns a description of UI, usually JSX. JSX resembles HTML but supports JavaScript expressions and React conventions such as className. Props are inputs passed by a parent. State is memory associated with a component&#39;s position in the rendered tree. Calling its setter requests rendering with an updated value.</p>
+<p>Do not mutate state directly. Use a new array/object, and use a functional setter when the next state depends on the previous state. Rendering should stay pure. Event handlers perform interaction-driven work. Effects synchronize with external systems, such as a player, timer or API request. Declare dependencies based on values the effect uses and return cleanup for resources that need it.</p>
+<p><code>useRef</code> preserves a mutable reference without requesting a rerender. <code>useContext</code> reads a shared context value. A custom hook packages reusable hook logic. React Router chooses components according to the URL; useParams reads route parameters and useNavigate changes routes. Controlled forms use state for the input value. Keys help React identify list items across renders. A key is an identity hint, not a CSS selector or a value automatically passed as a prop.</p>
+<pre><code class="language-jsx">function CategoryFilter({ categories }) {
+  const [selected, setSelected] = useState(&#39;all&#39;);
+  return &lt;select value={selected} onChange={e =&gt; setSelected(e.target.value)}&gt;
+    &lt;option value=&quot;all&quot;&gt;All&lt;/option&gt;
+    {categories.map(category =&gt; &lt;option key={category}&gt;{category}&lt;/option&gt;)}
+  &lt;/select&gt;;
+}
+</code></pre>
+<p>Know why an effect without a dependency array runs after each commit, why dependencies can cause reruns, and why an empty dependency array is associated with mounting. Development Strict Mode may repeat effect setup and cleanup to expose mistakes. Do not fix that by removing necessary cleanup.</p>
+<h3>Introduction to backend: Node.js and Express - 9 hours</h3>
+<p>Node.js runs JavaScript outside the browser. Express maps HTTP methods and paths to handlers. Middleware can parse input, attach session information, reject unauthorized access or pass control with next(). A controller coordinates a request&#39;s work. A model represents database data and operations.</p>
+<p>Know GET for reads, POST for creation/actions, PUT for updates under this API&#39;s conventions, and DELETE for removal. JSON is a data interchange format. Typical statuses: 200 successful request, 201 creation, 400 invalid input, 401 authentication required, 403 forbidden, 404 unavailable resource, 409 conflict, 500 server failure. CORS controls which browser origins may access responses; it is not a substitute for login or authorization. Project link: Express routes and Axios services.</p>
+<h3>Code style, patterns and best practices - 3 hours</h3>
+<p>Use names that explain intent, small responsibilities, consistent formatting and reusable components where they actually help. Keep request code in services and server responsibilities in routes/controllers/models. Handle errors at boundaries. Keep configuration separate from secrets. The smallest clear solution is preferable to unnecessary abstraction. Project link: shared Axios configuration and separate course/user services. The repository is a prototype and contains large components and incomplete cases; explain an improvement without claiming the architecture is perfect.</p>
+<h3>Containerization basics using Docker - 3 hours</h3>
+<p>An image is a packaged filesystem and metadata used to start a container. A container is an isolated running process. A Dockerfile describes an image build. Port mappings make a container&#39;s service reachable; volumes retain data outside a disposable container&#39;s writable layer. Environment variables configure processes. Compose can describe several services together. Project link: these concepts could package the frontend, API and database, but this repository does not contain a Dockerfile or Compose setup. Do not claim the application was containerized based only on the curriculum.</p>
+<h3>Functional documentation and unit testing - 3 hours</h3>
+<p>Documentation should explain setup, required configuration, expected inputs/outputs and limitations. A unit test isolates a small behaviour. An integration test checks collaboration between real parts, such as an API and database. An end-to-end test exercises the user journey. Arrange inputs, perform an action, then assert an observable result. A stub replaces an external dependency with controlled behaviour.</p>
+<p>Project example: <code>gradeQuiz</code> can be tested with known questions and answer indices. A wrong answer should score zero. A database test can check transaction rollback and reward replay protection. In this preparation run, 11 backend tests passed and two database tests skipped. The frontend build succeeded, but a build is not a UI test and skipped tests are not passes.</p>
+<h3>Getting started with Git and GitHub - 3 hours</h3>
+<p>Git records snapshots called commits. The working tree is your current files, staging selects the next snapshot, and commit records it. A branch names a line of history. Pull retrieves/integrates remote changes and push publishes local commits. A merge combines histories and may require conflict resolution. A pull request lets teammates discuss a proposed change. <code>.gitignore</code> excludes local/generated files from normal untracked-file staging; it does not remove an already tracked secret from history. Project link: this is a multi-contributor repository. Use “we” for shared work and “I” for your confirmed responsibility.</p>
+<h3>Capstone project - 3 scheduled contact hours</h3>
+<p>A capstone applies the curriculum to a larger problem. Be ready to explain the intended user, core journey, division of work, architecture, a concrete implementation and one limitation. The timetable&#39;s contact hours are not the team&#39;s total development time. Your own actual work and experience are the strongest evidence.</p>
+<h2>7. Likely examiner questions and model answers</h2>
+<h3>Questions for either presenter</h3>
+<p><strong>What did the training teach you?</strong> “It covered frontend foundations through React, with supporting topics such as TypeScript, Bootstrap, backend APIs, Git and testing. The project helped me connect those concepts to an application.” Follow with one example from your own screens.</p>
+<p><strong>Why React?</strong> “It lets us build the interface from reusable components and render it based on data and state. This project has shared navigation and dedicated pages with different local state.” Avoid claiming React is always the best choice.</p>
+<p><strong>Props versus state?</strong> “Props come from the parent. State is memory managed by the component. YouTubePlayer receives lessonId as a prop; the lesson page stores the selected lesson in state.”</p>
+<p><strong>What causes a rerender?</strong> “A state update, a context update, or rendering by a parent can lead to another render. Changing a ref by itself does not request one.”</p>
+<p><strong>What is useEffect for?</strong> “Synchronizing React with something external, such as loading profile data or managing a video player. Cleanup stops resources such as timers.”</p>
+<p><strong>Why TypeScript if we already validate forms?</strong> “TypeScript checks code before it runs. Form and server validation check actual runtime inputs. They solve different problems.”</p>
+<p><strong>Is this a finished production platform?</strong> “It is a training prototype. The main screens and API structure exist, but some analytics are placeholders, practice validation is basic, and fuller integration and accessibility checks remain.”</p>
+<p><strong>What is the difference between frontend and backend validation?</strong> “Frontend validation gives quick feedback. Backend validation protects the system when a caller bypasses the interface.”</p>
+<p><strong>How did you collaborate?</strong> State the actual division: Saif handled backend and lesson experience, Maaly handled landing/profile/achievements, and other team members contributed remaining parts. Only describe branching, meetings or review practices that you actually used.</p>
+<p><strong>What was your biggest challenge?</strong> Choose a real experience before rehearsal. Saif can consider synchronizing player state and saved progress if that was genuinely difficult. Maaly can consider keeping edit/cancel state consistent or handling API loading if that reflects her experience. Do not invent an incident, deadline, metric or fix.</p>
+<h3>Questions especially relevant to Saif</h3>
+<p><strong>How does resume work?</strong> “The player loads saved currentTime for the lesson when ready, seeks there, and periodically saves the new position through the progress API.”</p>
+<p><strong>Why refs for the player and timers?</strong> “They preserve mutable external handles across renders without using them as visible UI state. Cleanup uses those handles to stop timers and destroy the old player.”</p>
+<p><strong>How do you prevent progress leaking between courses?</strong> “The API resolves the lesson&#39;s course and scopes the progress query to the current user and that course. The progress model also has a unique user/course index.”</p>
+<p><strong>Who decides the quiz score?</strong> “The server grades submitted answer indices against the stored quiz. The browser displays feedback, but its claimed score is not authoritative.”</p>
+<p><strong>Why a transaction for rewards?</strong> “Attempt storage and a first-pass points update should succeed together. The first-pass claim also prevents repeated passing attempts from granting the same quiz reward.” Mention that database tests were not run locally here.</p>
+<p><strong>Can somebody bypass a disabled Next button?</strong> “Yes, client controls can be bypassed. The backend needs to enforce every progression rule that matters. The current UI guidance is stronger than the server&#39;s full progression enforcement.”</p>
+<p><strong>What is the password storage method?</strong> “A bcrypt hash. Login compares the supplied password with the stored hash. We should not store plaintext passwords.”</p>
+<p><strong>Why sessions rather than JWTs?</strong> “This implementation uses a browser session cookie tied to server-stored session data. That matches the inspected code. I would explain the tradeoffs if redesigning authentication, but JWTs are not the mechanism here.”</p>
+<h3>Questions especially relevant to Maaly</h3>
+<p><strong>What did you personally build?</strong> “The landing page, profile and achievements. I can show their layout, state and API integration. Backend and lesson playback were other team responsibilities.”</p>
+<p><strong>Are landing-page courses fetched from the database?</strong> “The landing page uses local course summaries. The authenticated catalog is a separate page that requests course data from the backend.”</p>
+<p><strong>How does the name field work?</strong> “newName controls the input. Save validates it and awaits the update request, then updates profileData. Cancel restores the saved name.”</p>
+<p><strong>Why copy nested objects?</strong> “React state should be updated without mutating the existing object. Copying the profile and its user creates a new value at both levels.”</p>
+<p><strong>How does achievement filtering work?</strong> “selectedCategory selects either all achievements or the corresponding grouped array. React derives and renders that list from the current state.”</p>
+<p><strong>Does clicking an achievement unlock it?</strong> “No. Clicking shows feedback. The backend computes earned status from supported progress requirements and existing badges.”</p>
+<p><strong>What if the API fails?</strong> “The profile and achievements render error feedback instead of normal data. The profile provides a Try Again action. Loading indicators explain the wait.”</p>
+<p><strong>Is the page fully accessible?</strong> “I used readable labels and feedback patterns, but I would not claim audited compliance. A complete keyboard and screen reader review is a further improvement.”</p>
+<h2>8. Differences from the original project PDF</h2>
+<table>
+<thead>
+<tr>
+<th>Original deck wording</th>
+<th>Accurate description for this checkout</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Monaco code editor</td>
+<td>Controlled textarea with iframe live preview</td>
+</tr>
+<tr>
+<td>Real-time admin analytics/system status</td>
+<td>Admin dashboard contains placeholder figures</td>
+</tr>
+<tr>
+<td>Social badge sharing and rarity levels</td>
+<td>Current page filters categories and shows earned/locked progress</td>
+</tr>
+<tr>
+<td>Mandatory progression</td>
+<td>The UI guides progression; complete server enforcement is not established</td>
+</tr>
+<tr>
+<td>Tree/streak growth</td>
+<td>Screens display stored indicators; login updates streaks and no complete growth claim is made</td>
+</tr>
+<tr>
+<td>AI tutoring, mobile app and peer study groups</td>
+<td>Future ideas, not implemented features</td>
+</tr>
+</tbody></table>
+<p>Code practice “tests” are expected-text checks against parsed HTML. They do not execute arbitrary JavaScript test cases. Some success messages mention rewards that the corresponding component does not itself persist. Explain these as prototype boundaries if asked.</p>
+<h2>9. Short demonstration and fallback</h2>
+<p><strong>Saif, 90 seconds:</strong> course catalog (10 seconds), lesson sidebar and selection (25), video resume explanation (20), switch to code practice (20), explain quiz/progress request (15). A screenshot explanation is sufficient if the database or internet is unavailable. Do not spend the discussion troubleshooting setup.</p>
+<p><strong>Maaly, 90 seconds:</strong> landing call to action (20 seconds), profile fields and name edit flow (30), achievements filtering and locked feedback (30), explain the API boundary (10).</p>
+<p>The screenshots in these decks show the actual local React application with intercepted sample API responses. They demonstrate the interface, not a functioning MongoDB session. The lesson screenshot includes an embedded YouTube HTML lesson. It is an illustrative sample course, not evidence of DEPI&#39;s own teaching videos.</p>
+<p>For a real live run, follow the repository README: install the client/server dependencies, configure a local server environment privately, use a MongoDB replica set, start the server on its configured port and the Vite client on port 5173. Rehearse with an account and populated course data before the discussion. Keep credentials out of slides and screen sharing. The supplied screenshots avoid that setup dependency.</p>
+<h2>10. Rehearsal plan before Sunday</h2>
+<p><strong>First pass, 45-60 minutes:</strong> understand sections 2-5, trace your own pages, then deliver your main slides aloud once. Mark concepts you cannot explain without notes.</p>
+<p><strong>Second pass, 60 minutes:</strong> revise HTML/CSS/JavaScript/TypeScript/React, then explain one project example for each. Review the shorter curriculum subjects so none is unfamiliar.</p>
+<p><strong>Third pass, 30 minutes:</strong> ask each other the questions in section 7. Answer in your own words. If you do not know something, explain what you do know and how you would verify the rest.</p>
+<p><strong>Final pass, 20 minutes:</strong> time a complete solo presentation, practice one interruption, and rehearse the screenshot fallback. Copy the PowerPoint, PDF and course outline to a USB drive and keep another copy available. Bring the training certificate and project as requested by the college.</p>
+<p>A useful transition is: “That is the user-facing behaviour. I will now explain the state and API request behind it.” Another is: “This part belongs to the shared project; my own contribution was …”</p>
+<h2>11. Sources and code navigation</h2>
+<p>Evidence: the college email supplied in chat, the course outline image, the 15-page team project PDF, the user&#39;s confirmed responsibilities, and the current repository. Source references are also in each slide&#39;s speaker notes.</p>
+<p>Primary documentation used to verify revision concepts:</p>
+<ul>
+<li>React state: <a href="https://react.dev/learn/state-a-components-memory">https://react.dev/learn/state-a-components-memory</a></li>
+<li>React effects: <a href="https://react.dev/learn/synchronizing-with-effects">https://react.dev/learn/synchronizing-with-effects</a></li>
+<li>TypeScript static checking: <a href="https://www.typescriptlang.org/docs/handbook/typescript-from-scratch">https://www.typescriptlang.org/docs/handbook/typescript-from-scratch</a></li>
+<li>Bootstrap 5.3 grid: <a href="https://getbootstrap.com/docs/5.3/layout/grid/">https://getbootstrap.com/docs/5.3/layout/grid/</a></li>
+<li>Express middleware: <a href="https://expressjs.com/en/guide/using-middleware/">https://expressjs.com/en/guide/using-middleware/</a></li>
+<li>Docker container concepts: <a href="https://docs.docker.com/get-started/docker-concepts/the-basics/what-is-a-container/">https://docs.docker.com/get-started/docker-concepts/the-basics/what-is-a-container/</a></li>
+<li>JavaScript revision: <a href="https://developer.mozilla.org/en-US/docs/Learn_web_development/Core/Scripting">https://developer.mozilla.org/en-US/docs/Learn_web_development/Core/Scripting</a></li>
+</ul>
+<p>Treat these as revision references rather than a record of exactly what the instructor said. The supplied curriculum image is the evidence for the course subjects and hours.</p>
+</body></html>

@@ -191,9 +191,12 @@ const Achievements: React.FC = () => {
               }}
             >
               <Card
-                className={`text-center shadow-sm border-0 h-100 ${
-                  !achievement.earned ? "opacity-75" : ""
-                }`}
+                className="text-center shadow-sm border-0 h-100"
+                role="button"
+                tabIndex={0}
+                onKeyDown={event => {
+                  if (event.key === 'Enter' || event.key === ' ') { event.preventDefault(); handleClick(achievement); }
+                }}
                 style={{
                   cursor: "pointer",
                   transition: "transform 0.2s",
@@ -257,27 +260,13 @@ const Achievements: React.FC = () => {
                 </Card.Body>
               </Card>
 
-              {/* Lock Overlay */}
+              {/* Keep locked goals readable and show their status separately. */}
               {!achievement.earned && (
                 <div
-                  className="position-absolute top-0 start-0 w-100 h-100 d-flex align-items-center justify-content-center"
-                  style={{
-                    backgroundColor: "rgba(255, 255, 255, 0.6)",
-                    cursor: "pointer",
-                  }}
-                  onClick={() => handleClick(achievement)}
+                  className="position-absolute top-0 end-0 p-2 text-secondary"
+                  aria-label="Locked achievement"
                 >
-                  <div
-                    className="rounded-circle shadow-sm d-flex align-items-center justify-content-center"
-                    style={{
-                      width: "40px",
-                      height: "40px",
-                      backgroundColor: "rgba(255,255,255,0.95)",
-                      color: "#6c757d",
-                    }}
-                  >
-                    <FaLock size={18} />
-                  </div>
+                  <FaLock size={18} />
                 </div>
               )}
             </div>

@@ -41,7 +41,10 @@ export const LessonQuiz: React.FC = () => {
   const [lives, setLives] = useState(3);
   const gameStateRef = useRef<GameState | null>(null);
   const [submittingQuiz, setSubmittingQuiz] = useState(false);
-  const [userAnswers, setUserAnswers] = useState<number[]>([]);
+  const userAnswers = useRef<number[]>([]);
+  const submissionPending = useRef(false);
+  const [serverPassed, setServerPassed] = useState(false);
+  const [submissionError, setSubmissionError] = useState('');
 
   // Mark lesson complete as soon as the quiz is passed so progress is always saved
   const markLessonComplete = async () => {
@@ -66,7 +69,7 @@ export const LessonQuiz: React.FC = () => {
       const data = await quizService.getQuizByLessonId(lessonId!);
       setQuiz(data);
       // Initialize answers array with -1 (unanswered)
-      setUserAnswers(new Array(data.questions.length).fill(-1));
+      userAnswers.current = new Array(data.questions.length).fill(-1);
     } catch (error: any) {
       console.error('Failed to load quiz:', error);
       toast.error(error.response?.data?.error || 'Failed to load quiz');
@@ -134,7 +137,9 @@ export const LessonQuiz: React.FC = () => {
   }, [currentQuestionIndex, quiz, showScore]);
 
   const handleGameOver = async () => {
-    if (submittingQuiz || !quiz || showScore) return;
+    if (submissionPending.current || !quiz) return;
+    submissionPending.current = true;
+    setSubmissionError('');
     
     setShowScore(true);
     setSubmittingQuiz(true);
@@ -143,13 +148,14 @@ export const LessonQuiz: React.FC = () => {
       // Send the actual answers collected during the game
       const result = await quizService.submitQuizAttempt(
         quiz._id,
-        userAnswers,
+        userAnswers.current,
         lessonId!,
         courseId
       );
 
       const { percentage, passed } = result;
       setScore(result.score);
+      setServerPassed(passed);
 
       if (passed) {
         await markLessonComplete();
@@ -164,9 +170,11 @@ export const LessonQuiz: React.FC = () => {
         toast.error(`Quiz Failed. Score: ${percentage}%. Passing: ${quiz.passingScore}%`);
       }
     } catch (error: any) {
+      setSubmissionError('Your result could not be saved. Please retry.');
       console.error('Failed to submit quiz:', error);
       toast.error('Failed to save quiz results');
     } finally {
+      submissionPending.current = false;
       setSubmittingQuiz(false);
     }
   };
@@ -180,9 +188,9 @@ export const LessonQuiz: React.FC = () => {
 
 
     // Track the user's answer
-    const newAnswers = [...userAnswers];
+    const newAnswers = [...userAnswers.current];
     newAnswers[currentQuestionIndex] = selectedIndex;
-    setUserAnswers(newAnswers);
+    userAnswers.current = newAnswers;
 
     setSelectedOption(selectedAnswer);
     setAnswerStatus(isCorrect ? "correct" : "wrong");
@@ -239,8 +247,10 @@ export const LessonQuiz: React.FC = () => {
     setTimer(15);
     setLives(3);
     setSubmittingQuiz(false);
+    setServerPassed(false);
+    setSubmissionError('');
     if (quiz) {
-      setUserAnswers(new Array(quiz.questions.length).fill(-1));
+      userAnswers.current = new Array(quiz.questions.length).fill(-1);
     }
     if (gameStateRef.current) {
       gameStateRef.current.isGameOver = false;
@@ -292,7 +302,7 @@ export const LessonQuiz: React.FC = () => {
 
   const totalPoints = quiz.questions.reduce((sum, q) => sum + q.points, 0);
   const percentage = totalPoints > 0 ? Math.round((score / totalPoints) * 100) : 0;
-  const passed = percentage >= quiz.passingScore;
+  const passed = serverPassed;
 
   return (
     <>
@@ -353,23 +363,24 @@ export const LessonQuiz: React.FC = () => {
               {passed ? '🎉' : '📚'}
             </div>
             <h2 style={{ fontWeight: 800, marginBottom: 8 }}>
-              {passed ? 'Quiz Passed!' : 'Quiz Failed'}
+              {submittingQuiz ? 'Saving your result...' : submissionError ? 'Result not saved' : passed ? 'Quiz Passed!' : 'Quiz Failed'}
             </h2>
             <h4 style={{ marginBottom: 8 }}>
               Score: {score} / {totalPoints} ({percentage}%)
             </h4>
             <p style={{ marginBottom: 24, opacity: 0.8 }}>
-              {passed 
+              {submissionError || (passed 
                 ? 'Great job! Returning to lesson...' 
-                : `You need ${quiz.passingScore}% to pass`}
+                : `You need ${quiz.passingScore}% to pass`)}
             </p>
             <div className="d-flex gap-3">
-              {!passed && (
+              {submissionError && <Button onClick={handleGameOver} disabled={submittingQuiz}>Retry saving result</Button>}
+              {!passed && !submissionError && !submittingQuiz && (
                 <Button variant="primary" onClick={handleRestart}>
                   Try Again
                 </Button>
               )}
-              <Button variant="outline-light" onClick={() => handleQuit(passed)}>
+              <Button variant="outline-light" disabled={submittingQuiz} onClick={() => handleQuit(passed)}>
                 {passed ? 'Continue' : 'Quit'}
               </Button>
             </div>

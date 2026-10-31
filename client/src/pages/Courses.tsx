@@ -3,9 +3,11 @@ import { useNavigate } from "react-router-dom";
 import { courseService } from "../services/courseService";
 import { toast } from "react-toastify";
 import { Course } from "../types";
+import { useAuth } from '../hooks/useAuth';
 import "../pages/Style.css";
 
 export const Courses = () => {
+  const { user } = useAuth();
   const [courses, setCourses] = useState<Course[]>([]);
   const [enrolledCourseIds, setEnrolledCourseIds] = useState<string[]>([]);
   const [loading, setLoading] = useState(true);
@@ -105,12 +107,12 @@ export const Courses = () => {
     <>
       <div className="container mt-4">
         <h1 className="fw-bold mb-4 text-center">Available Courses 📚</h1>
-        <button 
+        {user?.role !== 'student' && <button 
           onClick={() => navigate("/courses/new")} 
           className="btn btn-dark px-3 my-2"
         >
           Add New Course
-        </button>
+        </button>}
         <div className="row g-4 justify-content-center">
           {courses.map((course) => (
             <CourseCard 

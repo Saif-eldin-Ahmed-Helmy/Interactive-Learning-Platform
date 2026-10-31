@@ -103,7 +103,7 @@ const CodeEditor: React.FC<CodeEditorProps> = ({ exercise, onComplete }) => {
     const passed = validateCode();
     
     if (passed) {
-      toast.success("🎉 Perfect! Exercise completed! +20 points!");
+      toast.success("🎉 Perfect! Exercise completed!");
       setValidationStatus('success');
       setTimeout(() => {
         onComplete();
@@ -182,7 +182,7 @@ const CodeEditor: React.FC<CodeEditorProps> = ({ exercise, onComplete }) => {
         </div>
       )}
 
-      <div className="code-editor-container">
+      <div className="code-editor-grid">
         {/* Code Editor Side */}
         <div className="editor-panel">
           <div className="panel-header">
@@ -284,7 +284,7 @@ const CodeEditor: React.FC<CodeEditorProps> = ({ exercise, onComplete }) => {
           }
         }
 
-        .code-editor-container {
+        .code-editor-grid {
           display: grid;
           grid-template-columns: 1fr 1fr;
           gap: 15px;
@@ -345,7 +345,7 @@ const CodeEditor: React.FC<CodeEditorProps> = ({ exercise, onComplete }) => {
         }
 
         @media (max-width: 768px) {
-          .code-editor-container {
+          .code-editor-grid {
             grid-template-columns: 1fr;
             height: auto;
           }

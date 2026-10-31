@@ -60,7 +60,7 @@ export default function LandingPage(): JSX.Element {
                 Unlock Your Coding. Start Your Front End Journey
               </h1>
               <p className="lead">
-                Interactive challenges and an intelligent guide — build real
+                Video lessons, quizzes and code practice — build real
                 skills with short, focused lessons.
               </p>
 
@@ -117,7 +117,7 @@ export default function LandingPage(): JSX.Element {
             <Row>
               <Col>
                 <h2 id="features-heading" className="section-title">
-                  what do we provide and makes us diffrent
+                  Learn, practice and track your progress
                 </h2>
               </Col>
             </Row>
@@ -125,7 +125,7 @@ export default function LandingPage(): JSX.Element {
               <Col lg={3} md={4} className="d-flex justify-content-center mb-4 mb-md-0">
                 <img
                   src={logo}
-                  alt="AI Learning Logo"
+                  alt="Learning Platform owl logo"
                   className="features-logo"
                   onError={(e) => {
                     const target = e.target as HTMLImageElement;
@@ -142,7 +142,7 @@ export default function LandingPage(): JSX.Element {
                           <BsGear className="course-icon" />
                         </div>
                         <Card.Title className="feature-card-title">Gamified Learning</Card.Title>
-                        <Card.Text className="feature-card-text">We'll audit posts, suggest, & teach. Small tweaks for maximum gain.</Card.Text>
+                        <Card.Text className="feature-card-text">Check your understanding with lesson quizzes and see the progress you make.</Card.Text>
                       </Card.Body>
                     </Card>
                   </Col>
@@ -153,7 +153,7 @@ export default function LandingPage(): JSX.Element {
                           <BsBook className="course-icon" />
                         </div>
                         <Card.Title className="feature-card-title">Interactive Courses</Card.Title>
-                        <Card.Text className="feature-card-text">Create posts, courses, & quizzes. Bring content to life and engage.</Card.Text>
+                        <Card.Text className="feature-card-text">Watch a lesson, then experiment with HTML, CSS and JavaScript in the code editor.</Card.Text>
                       </Card.Body>
                     </Card>
                   </Col>
@@ -163,8 +163,8 @@ export default function LandingPage(): JSX.Element {
                         <div className="icon-badge" aria-hidden>
                           <BsShield className="course-icon" />
                         </div>
-                        <Card.Title className="feature-card-title">Track Your Count</Card.Title>
-                        <Card.Text className="feature-card-text">Detailed analytics. A bird's-eye view, milestones, & all progress.</Card.Text>
+                        <Card.Title className="feature-card-title">See Your Progress</Card.Title>
+                        <Card.Text className="feature-card-text">Review completed lessons, learning streaks and achievements in your profile.</Card.Text>
                       </Card.Body>
                     </Card>
                   </Col>

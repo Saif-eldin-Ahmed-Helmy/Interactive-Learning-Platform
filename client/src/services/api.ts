@@ -18,6 +18,8 @@ api.interceptors.response.use(
     return response;
   },
   (error) => {
+    // Checking an anonymous visitor is expected on the public landing page.
+    if (error.response?.status === 401 && error.config?.url === '/auth/me') return Promise.reject(error);
     // Handle different types of errors
     if (error.response) {
       // The request was made and the server responded with a status code
