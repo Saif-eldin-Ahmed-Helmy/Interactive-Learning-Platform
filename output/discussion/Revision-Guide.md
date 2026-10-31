@@ -6,7 +6,7 @@ Individual discussions: Sunday, 1 November 2026, 09:00, according to the college
 
 ## 1. What to bring and how to use this pack
 
-Bring your training certificate, the supplied course outline, your own presentation, and a copy of the team project. The email requires at least 10 slides per person and readiness to discuss both the course and projects. Each deck has 12 visual slides with short speaking cues in the notes, ending with a live demo. Each person presents independently. You do not split one presentation between you.
+Bring your training certificate, the supplied course outline, your own presentation, and a copy of the team project. The email requires at least 10 slides per person and readiness to discuss both the course and projects. Each deck has 11 slides with short speaking cues in the notes, ending with a live demo, plus a certificates appendix. Each person presents independently. You do not split one presentation between you.
 
 Open your PowerPoint in Presenter View to see the speaking notes. Read the notes to understand the material, then rehearse from the slide titles. Aim for roughly 10-12 minutes unless the examiner specifies another duration. Do not memorize every sentence. A natural answer has four parts: the concept, its purpose, an example from your work, and a limitation where relevant.
 
