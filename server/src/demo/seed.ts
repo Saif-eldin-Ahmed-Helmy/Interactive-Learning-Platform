@@ -51,10 +51,10 @@ export async function seedDemo(uri: string, credentials?: Record<string, string>
           overallProgress: count * 25, quizAttempts: [], videoProgress: [],
         } }, { upsert: true });
       }
-      await Badge.updateOne({ userId, name: 'Three Day Streak' }, { $setOnInsert: {
-        userId, name: 'Three Day Streak', description: 'Learned on three days in a row.',
-        type: 'badge', achievementType: 'streak', iconUrl: '🔥',
-      } }, { upsert: true });
+      await Badge.updateOne({ userId, name: 'Three Day Streak' }, {
+        $set: { description: 'Learned on three days in a row.' },
+        $setOnInsert: { userId, name: 'Three Day Streak', type: 'badge', achievementType: 'streak', iconUrl: '🔥' },
+      }, { upsert: true });
     }
     console.log('Demo content ready: 4 courses, 16 lessons, 16 quizzes and 2 learners. Existing progress is preserved.');
   } finally { await mongoose.disconnect(); }
