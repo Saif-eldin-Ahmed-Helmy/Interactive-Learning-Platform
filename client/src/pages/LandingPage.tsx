@@ -2,7 +2,7 @@ import { Container, Row, Col, Card } from 'react-bootstrap';
 import { useNavigate } from 'react-router-dom';
 import { BsGear, BsBook, BsShield } from 'react-icons/bs';
 import logo from '../assets/logo.png';
-import landingpage from '../assets/landingpage.png';
+import { HeroIllustration } from '../components/HeroIllustration';
 // LearningLanding.tsx
 // Single-file React + TypeScript page for a Vite project using Bootstrap 5 classes.
 // - Uses only local placeholder JSON data (no backend calls)
@@ -100,10 +100,8 @@ export default function LandingPage(): JSX.Element {
 
             <div className="col-lg-6 d-none d-lg-block">
               {/* Decorative illustration placeholder */}
-              <div className="hero-illustration" aria-hidden>
-                <div className="text-center text-dark">
-                  <img src={landingpage} alt="Illustration of coding on a laptop" className="img-fluid" />
-                </div>
+              <div className="hero-illustration">
+                <HeroIllustration />
               </div>
             </div>
           </div>

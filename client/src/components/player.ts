@@ -1,5 +1,6 @@
 import owlImageSrc from "../assets/owl1.png";
-import owlImageSrc2 from "../assets/owl2.png";
+// owl4 plants the back foot while the front kicks, so both legs alternate with owl1.
+import owlImageSrc2 from "../assets/owl4.png";
 import { isMobile } from "./Canva";
 
 export enum PlayerState {
@@ -59,13 +60,14 @@ export default class Player {
     this.RunningImages.push(this.image);
   }
 
+  // A jump rises to twice jumpHeight and lands after jumpDuration ms on any screen size or refresh rate.
+  private jumpDuration = 650;
+
   jump() {
     if (!this.isJumping) {
       this.isJumping = true;
-      this.y_velocity = -this.jumpHeight * this.scaleratio * 0.05;
-      if (isMobile) {
-        this.y_velocity = -this.jumpHeight * this.scaleratio * 0.2;
-      }
+      this.gravity = (16 * this.jumpHeight) / this.jumpDuration ** 2;
+      this.y_velocity = (-8 * this.jumpHeight) / this.jumpDuration;
     }
   }
 
@@ -75,17 +77,13 @@ export default class Player {
 
   update(deltatime: number, Game_Speed: number) {
     this.run(deltatime, Game_Speed);
-    this.applyGravity();
+    this.applyGravity(deltatime);
   }
 
-  applyGravity() {
-    if (isMobile) {
-      this.y_velocity += this.gravity * this.scaleratio * 0.3;
-      this.y += this.y_velocity * 0.3;
-    } else {
-      this.y_velocity += this.gravity * this.scaleratio * 0.6;
-      this.y += this.y_velocity * 0.6;
-    }
+  applyGravity(deltatime: number) {
+    if (!this.isJumping) return;
+    this.y_velocity += this.gravity * deltatime;
+    this.y += this.y_velocity * deltatime;
 
     if (this.y > this.y_ground) {
       this.y = this.y_ground;

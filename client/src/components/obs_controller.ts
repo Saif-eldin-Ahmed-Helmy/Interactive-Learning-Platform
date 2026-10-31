@@ -21,7 +21,8 @@ export default class ObsController {
     this.obsImages = obsImages;
     this.scaleRatio = scaleRatio;
     this.speed = speed;
-    this.scheduleNextObs();
+    // The first obstacle (and question) arrives soon after the game starts.
+    this.obs_interval_timer = 300;
   }
   scheduleNextObs() {
     // const interval =
@@ -35,26 +36,29 @@ export default class ObsController {
   GetNext_Obs() {
     const randomIndex = Math.floor(Math.random() * this.obsImages.length);
     this.Next_Obs = this.obsImages[randomIndex];
-    const xPos = this.ctx.canvas.width * 2;
+    // Spawn just past the right edge so obstacles arrive without a long empty run.
+    const xPos = this.ctx.canvas.width;
+    // Scale a copy on mobile; resizing the shared config made every later obstacle 4x larger.
+    const size = isMobile ? 4 : 1;
+    const width = this.Next_Obs.width * size;
+    const height = this.Next_Obs.height * size;
     var yPos =
       this.ctx.canvas.height -
-      this.Next_Obs.height * this.scaleRatio/1.8 -
+      height * this.scaleRatio/1.8 -
       6 * this.scaleRatio;
     if (isMobile) {
       yPos =
         this.ctx.canvas.height -
-        this.Next_Obs.height * 4 * this.scaleRatio +
+        height * this.scaleRatio +
         18 * this.scaleRatio;
-        this.Next_Obs.height = this.Next_Obs.height * 4;
-        this.Next_Obs.width = this.Next_Obs.width * 4;
     }
 
     const obs = new Obs(
       this.ctx,
       xPos,
       yPos,
-      this.Next_Obs.width * this.scaleRatio /1.8,
-      this.Next_Obs.height * this.scaleRatio /1.8,
+      width * this.scaleRatio /1.8,
+      height * this.scaleRatio /1.8,
       this.Next_Obs.image,
       this.obstacleIdCounter++
     );

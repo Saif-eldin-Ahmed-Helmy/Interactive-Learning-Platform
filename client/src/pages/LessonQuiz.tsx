@@ -39,6 +39,7 @@ export const LessonQuiz: React.FC = () => {
   const [answerStatus, setAnswerStatus] = useState<"correct" | "wrong" | null>(null);
   const [gameKey, setGameKey] = useState(0);
   const [lives, setLives] = useState(3);
+  const livesRef = useRef(3);
   const gameStateRef = useRef<GameState | null>(null);
   const [submittingQuiz, setSubmittingQuiz] = useState(false);
   const userAnswers = useRef<number[]>([]);
@@ -87,19 +88,10 @@ export const LessonQuiz: React.FC = () => {
       isWaitingForAnswer: false,
       onQuestionAnswered: (_isCorrect: boolean) => {},
       onObstacleHit: () => {
-        let continued = false;
-        setLives((prev) => {
-          const next = prev - 1;
-          continued = next > 0 || next === 0;
-          if (!continued) {
-            if (gameStateRef.current) {
-              gameStateRef.current.isGameOver = true;
-            }
-            handleGameOver();
-          }
-          return next;
-        });
-        return continued;
+        // The canvas needs the answer now, so count lives in a ref; game over is handled by the polling effect.
+        livesRef.current -= 1;
+        setLives(livesRef.current);
+        return livesRef.current > 0;
       },
       questionTimer: 15,
       isGameOver: false,
@@ -140,6 +132,12 @@ export const LessonQuiz: React.FC = () => {
     if (submissionPending.current || !quiz) return;
     submissionPending.current = true;
     setSubmissionError('');
+    // Stop the canvas so it cannot keep running, losing lives or asking questions behind the result screen.
+    if (gameStateRef.current) {
+      gameStateRef.current.isGameOver = true;
+      gameStateRef.current.isWaitingForAnswer = false;
+      gameStateRef.current.shouldShowQuestion = false;
+    }
     
     setShowScore(true);
     setSubmittingQuiz(true);
@@ -246,6 +244,7 @@ export const LessonQuiz: React.FC = () => {
     setShowScore(false);
     setTimer(15);
     setLives(3);
+    livesRef.current = 3;
     setSubmittingQuiz(false);
     setServerPassed(false);
     setSubmissionError('');
@@ -333,6 +332,7 @@ export const LessonQuiz: React.FC = () => {
               key={i}
               style={{
                 fontSize: 22,
+                color: "#dc3545",
                 filter: i < lives ? "none" : "grayscale(100%) opacity(0.4)",
               }}
               aria-hidden

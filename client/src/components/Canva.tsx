@@ -165,6 +165,8 @@ export const Canva = forwardRef<CanvaRef, CanvaProps>((props, ref) => {
 
       const deltaTime = currentTime - prevTimeRef.current;
       prevTimeRef.current = currentTime;
+      // The quiz page can end the game too (last answer, time out, result screen).
+      if (props.gameStateRef.current?.isGameOver) isGameOverRef.current = true;
 
       const canvas = canvasRef.current;
       const ctx = canvas?.getContext("2d");
